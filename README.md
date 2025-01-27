@@ -4,7 +4,7 @@ End-to-end development of a scalable day trading system for SENG 468
 
 ## Important links
 
-- [Logbook](https://docs.google.com/document/d/1xYXMoz9LNA_vwVlQsgifg6b646PLg4U8BO-y8zszh6I/edit?usp=sharing) : Next one due January 24th
+- [Logbook](https://docs.google.com/document/d/1xYXMoz9LNA_vwVlQsgifg6b646PLg4U8BO-y8zszh6I/edit?usp=sharing) : Next one due January 27th
 
 - [Reports](https://docs.google.com/document/d/14vhKMh3iT3FeVTXIK1BBEGvfbifLjwMe0yo4wCOuHrA/edit?usp=sharing) : Next one due January 31st 5%
 
