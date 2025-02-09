@@ -1,9 +1,8 @@
 const express = require('express');
-const { MongoClient, ObjectId } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const { request } = require('http');
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const userAuthService = express();
@@ -47,7 +46,8 @@ userAuthService.post("/register", async (req, res) => {
             return res.status(401).json({ error: "Invalid username" });
         }
 
-        const result = await usersCollection.insertOne({ username, password, name, tempToken, is_authenticated }); // TODO: hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const result = await usersCollection.insertOne({ username, password: hashedPassword, name, is_authenticated });
         res.json(result); // TODO: switch to json object as specified in SingleUserTest
     } catch (err) {
         res.status(500).json({ error: err.message }); // TODO: switch to json object as specified in SingleUserTest
@@ -67,7 +67,7 @@ userAuthService.post("/login", async (req, res) => {
         }
 
         // Verify password
-        const isPasswordValid = password === user.password; // TODO: Test with hashed passwords (use bcrypt.compare()?)
+        const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
             return res.status(401).json({ error: "Invalid username or password" });
         }
