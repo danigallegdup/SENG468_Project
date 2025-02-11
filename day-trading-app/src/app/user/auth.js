@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -91,32 +91,33 @@ userAuthService.post("/login", async (req, res) => {
 // authenticate token function
 // Authenticates a token and returns the user_id associated with this token.
 // Will be used by other services to get user id when passed a token.
-async function authenticateToken(req, res) {
-    const userToken = req.headers['token'];
+async function authenticateToken(userToken) {
     if (!userToken) {
         return res.status(401).json({ message: "Token is required" });
     }
 
     try {
-        const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+        const decoded = jwt.verify(userToken, JWT_SECRET);
+        const userId = decoded.userId;
+
+        // Fetching the associated user from the database
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
         
-        // Fetch user associated with the token
-        const user = await usersCollection.findOne({ token: userToken });
         if (!user) {
-            return res.status(401).json({ message: "Invalid token" });
+            throw new Error("User not found");
         }
 
-        req.user = user; // Store user data in request object
-        return res.json({ user_id: user._id });
-
+        return user; // Return the user object
     } catch (error) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: "Token has expired" });
-        } else {
-            return res.status(401).json({ message: "Invalid token" });
+        if (error.name === "TokenExpiredError") {
+            throw new Error("Token has expired");
         }
+        throw new Error("Invalid token");
     }
 }
+
+// This allows the function to be used by other services
+module.exports = { authenticateToken }
 
 
 // Start Server
