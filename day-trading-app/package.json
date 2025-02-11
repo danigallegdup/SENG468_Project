@@ -9,9 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "jsonwebtoken": "^9.0.2",
+=======
+>>>>>>> origin/main
     "mongodb": "^6.13.0",
     "next": "15.1.6",
     "react": "^19.0.0",
