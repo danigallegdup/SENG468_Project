@@ -36,7 +36,6 @@ const usersCollection = db.collection("users"); // This is the Collection (Docum
 userAuthService.post("/register", async (req, res) => {
     const { username, password, name } = req.body;
     if (!username || !password || !name) return res.status(400).json({ error: "Username, Password, and Name required" });
-    const tempToken = "12345";
     const is_authenticated = false;
 
     try {
