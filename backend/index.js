@@ -32,7 +32,7 @@ app.use('/api/wallet', authMiddleware, walletRoutes);
 app.use('/api/stocks', authMiddleware, stockRoutes);
 
 const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
+app.use('/', authRoutes);
 
 // User Registration Route
 app.post('/api/users', async (req, res) => {
