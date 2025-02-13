@@ -1,15 +1,14 @@
 // controllers/walletController.js
-const WalletTransaction = require('../models/WalletTransaction');
+const { getWalletTransactions } = require('../utils/tempDatabase');
+console.log("getWalletTransactions:", getWalletTransactions);
 
-// Get all wallet transactions for a user
 exports.getWalletTransactions = async (req, res) => {
     try {
-        const transactions = await WalletTransaction.find({ userId: req.user.id }).sort({ timeStamp: 1 });
+        const transactions = getWalletTransactions(req.user.id);
+        console.log("Returning wallet transactions:", transactions);
         res.json({ success: true, data: transactions });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error("Error fetching wallet transactions:", err.message);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };
-
-
-
