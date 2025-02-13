@@ -7,3 +7,10 @@ services:
     container_name: front-end
     ports:
       - "3000:3000"
+  
+  back-end:
+    build:
+        context: ./backend
+    container_name: back-end
+    ports:
+      - "5001:5001"
