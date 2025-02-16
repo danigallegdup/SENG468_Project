@@ -2,8 +2,6 @@
 
 # Node modules
 node_modules/
-package.json
-package-lock.json
 
 # Environment variables
 .env.txt
@@ -17,6 +15,9 @@ yarn-error.log*
 
 # Dependency directories
 jspm_packages/
+
+# result
+results/
 
 # Optional npm cache directory
 .npm
