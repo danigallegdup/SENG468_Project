@@ -1,5 +1,13 @@
+/**
+ * getWalletTransactions
+ * getWalletBalance
+ * addMoneyToWallet
+ */
+
+
 // controllers/walletController.js
 const WalletTransaction = require('../models/WalletTransaction');
+
 
 // Existing function for getting wallet transactions
 exports.getWalletTransactions = async (req, res) => {
