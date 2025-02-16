@@ -32,7 +32,7 @@ app.use('/api/wallet', authMiddleware, walletRoutes);
 app.use('/api/stocks', authMiddleware, stockRoutes);
 
 const authRoutes = require('./routes/authRoutes');
-app.use('/', authRoutes);
+app.use('/authentication', authRoutes);
 
 app.use('/', walletRoutes);
 
