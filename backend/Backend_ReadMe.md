@@ -213,4 +213,3 @@ backend/
 ❌ **No POST routes to add transactions** → Need to implement adding transactions.
 
 ## Goal end of the day: get all test passing on the server
-
