@@ -32,31 +32,9 @@ app.use('/api/wallet', authMiddleware, walletRoutes);
 app.use('/api/stocks', authMiddleware, stockRoutes);
 
 const authRoutes = require('./routes/authRoutes');
-app.use('/', authRoutes);
+app.use('/authentication', authRoutes);
 
-// User Registration Route
-app.post('/api/users', async (req, res) => {
-    try {
-        const { username, email, hashed_password } = req.body;
-
-        if (!username || !email || !hashed_password) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-
-        const newUser = new User({ username, email, hashed_password });
-        await newUser.save();
-
-        res.status(201).json({ message: 'User created successfully', user: newUser });
-    } catch (err) {
-        console.error('Error creating user:', err);
-        res.status(500).json({ error: 'Failed to create user' });
-    }
-});
+app.use('/', walletRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5001;
