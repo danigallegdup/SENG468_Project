@@ -1,11 +1,11 @@
-// models/WalletTransaction.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const WalletTransactionSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    amount: { type: Number, required: true },
-    type: { type: String, enum: ['deposit', 'withdrawal'], required: true },
-    timeStamp: { type: Date, default: Date.now }
+    _id: { type: String, required: true }, // Change ObjectId to String
+    userId: { type: String, required: true }, // Change ObjectId to String
+    amount: Number,
+    type: String,
+    timeStamp: String,
 });
 
-module.exports = mongoose.model('WalletTransaction', WalletTransactionSchema);
+module.exports = mongoose.model("WalletTransaction", WalletTransactionSchema);
