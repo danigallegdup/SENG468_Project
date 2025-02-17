@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 module.exports = (req, res, next) => {
-    const token = req.header('Authorization');
+    const token = req.header('token');
     console.log("Token Received:", token); // ✅ Check if token is being sent
 
     if (!token) {
@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded Token:", decoded); // ✅ Check if token is valid
         req.user = decoded;
         next();
