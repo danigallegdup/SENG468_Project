@@ -3,6 +3,16 @@ const router = express.Router();
 const connectDB = require("../config/db");
 const { publishOrder } = require("../config/rabbitmq");
 const authenticateToken = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
+const stockController = require("../controllers/stockController");
+const stockManagementController = require("../controllers/stockManagementController");
+
+router.use(authMiddleware);
+
+router.get("/getStockTransactions", stockController.getStockTransactions);
+router.post("/createStock", stockManagementController.createStock);
+router.get("/getStockPortfolio", stockManagementController.getStockPortfolio);
+router.post("/addStockToUser", stockManagementController.addStockToUser);
 
 // /placeStockOrder endpoint
 router.post("/placeStockOrder", authenticateToken, async (req, res) => {

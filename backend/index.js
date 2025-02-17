@@ -28,7 +28,7 @@ connectDB();
 // Routes
 app.use("/authentication", authRoutes); // ✅ Authentication routes (Login, Register, etc.)
 app.use("/api/wallet", walletRoutes);  // ✅ Wallet-related routes
-app.use("/api/stocks", stockRoutes);  // ✅ Stock-related routes
+app.use("/", stockRoutes);  // ✅ Stock-related routes
 
 // User Registration Route
 app.post("/api/users", async (req, res) => {
