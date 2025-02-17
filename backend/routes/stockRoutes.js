@@ -8,11 +8,8 @@ const stockManagementController = require('../controllers/stockManagementControl
 router.use(authMiddleware);
 
 router.get('/getStockTransactions', stockController.getStockTransactions);
-
 router.post('/createStock', stockManagementController.createStock);
-
 router.get('/getStockPortfolio', stockManagementController.getStockPortfolio);
-
 router.post('/addStockToUser', stockManagementController.addStockToUser);
 
 module.exports = router;

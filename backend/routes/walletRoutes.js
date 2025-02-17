@@ -5,9 +5,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 const walletController = require('../controllers/walletController');
 
 router.get('/getWalletTransactions', authMiddleware, walletController.getWalletTransactions);
-
 router.get('/getWalletBalance', authMiddleware, walletController.getWalletBalance);
-
 router.post('/addMoneyToWallet', authMiddleware, walletController.addMoneyToWallet);
+router.post('/updateWallet', authMiddleware, walletController.updateWallet);
 
 module.exports = router;
