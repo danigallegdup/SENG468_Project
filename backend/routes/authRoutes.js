@@ -1,3 +1,9 @@
+/**
+ * 
+ * @route   POST /api/auth/register
+ * @route   POST /api/auth/login
+ */
+
 // routes/authRoutes.js
 const express = require('express');
 const router = express.Router();

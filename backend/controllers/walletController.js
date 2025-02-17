@@ -1,3 +1,10 @@
+/**
+ * getWalletTransactions
+ * getWalletBalance
+ * addMoneyToWallet
+ */
+
+
 // controllers/walletController.js
 const WalletTransaction = require('../models/WalletTransaction');
 
