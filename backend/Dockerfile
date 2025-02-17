@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5001
 
 # Define the command to run the app
-CMD ["npm", "run", "dev"]
+CMD ["sh", "-c", "node ./config/clearDatabase.js && npm run dev"]
