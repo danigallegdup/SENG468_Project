@@ -1,8 +1,8 @@
-// models/Stock.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const StockSchema = new mongoose.Schema({
-    stock_name: { type: mongoose.Schema.Types.String, required: true }
+const stockSchema = new mongoose.Schema({
+    stock_name: { type: String, required: true, unique: true },
+    current_price: { type: Number, required: true }
 });
 
-module.exports = mongoose.model('Stock', StockSchema);
+module.exports = mongoose.model("Stock", stockSchema);
