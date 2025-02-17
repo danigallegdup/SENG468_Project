@@ -17,7 +17,7 @@ exports.createStock = async (req, res) => {
       return res.status(409).json({ success: false, data: { error: "Duplicate stock found" } });
     }
 
-    const newStock = new Stock({ stock_name });
+    const newStock = new Stock({ stock_name, current_price: 0 });
     await newStock.save();
     return res.json({ success: true, data: { stock_id: newStock._id } });
   } catch (err) {
