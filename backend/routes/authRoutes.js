@@ -18,7 +18,6 @@ router.post('/register', async (req, res) => {
   try {
     const { user_name, password, name } = req.body;
 
-    // Validate required fields
     if (!user_name || !password || !name) {
       return res.status(400).json({
         success: false,
@@ -26,7 +25,6 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ username: user_name });
     if (existingUser) {
       return res.status(400).json({
@@ -41,7 +39,6 @@ router.post('/register', async (req, res) => {
       username: user_name,
       email: `${user_name}@dummy.com`,
       hashed_password: password,
-      // Optionally, if you update your schema you can store the 'name'
     });
 
     await newUser.save();
@@ -74,7 +71,6 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Find user by username (using the 'user_name' field from the request)
     const user = await User.findOne({ username: user_name });
     if (!user || user.hashed_password !== password) {
       return res.status(400).json({
