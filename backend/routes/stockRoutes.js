@@ -11,8 +11,8 @@ router.use(authMiddleware);
 
 router.get("/getStockTransactions", stockController.getStockTransactions);
 router.post("/setup/createStock", stockManagementController.createStock);
-router.get("/getStockPortfolio", stockManagementController.getStockPortfolio);
-router.post("/addStockToUser", stockManagementController.addStockToUser);
+router.get("/transaction/getStockPortfolio", stockManagementController.getStockPortfolio);
+router.post("/setup/addStockToUser", stockManagementController.addStockToUser);
 
 // /placeStockOrder endpoint
 router.post("/placeStockOrder", authenticateToken, async (req, res) => {
