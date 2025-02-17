@@ -12,7 +12,6 @@ const User = require("./models/User");
 
 dotenv.config();
 
-// Initialize Express app
 const app = express();
 
 // Middleware
@@ -24,11 +23,10 @@ app.get("/", (req, res) => {
     res.send("✅ Backend is running!");
 });
 
-// Connect to MongoDB
 connectDB();
 
 // Routes
-app.use("/api/auth", authRoutes);  // ✅ Authentication routes (Login, Register, etc.)
+app.use("/authentication", authRoutes); // ✅ Authentication routes (Login, Register, etc.)
 app.use("/api/wallet", walletRoutes);  // ✅ Wallet-related routes
 app.use("/api/stocks", stockRoutes);  // ✅ Stock-related routes
 

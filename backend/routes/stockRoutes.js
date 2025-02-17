@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const router = express.Router();
 const connectDB = require("../config/db");
 const { publishOrder } = require("../config/rabbitmq");

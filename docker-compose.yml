@@ -14,3 +14,5 @@ services:
     container_name: back-end
     ports:
       - "5001:5001"
+    environment:
+      - NODE_ENV=development
