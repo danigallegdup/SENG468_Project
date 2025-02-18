@@ -57,7 +57,7 @@ router.post("/placeStockOrder", authenticateToken, async (req, res) => {
 });
 
 // /getStockPrices/ endpoint
-router.get("/getStockPrices", authenticateToken, async (req, res) => {
+router.get("/transaction/getStockPrices", authenticateToken, async (req, res) => {
     try {
         const db = await connectDB();
         const stocks = await db.collection("stocks").find({}).toArray();
