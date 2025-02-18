@@ -15,7 +15,7 @@ router.get("/transaction/getStockPortfolio", stockManagementController.getStockP
 router.post("/setup/addStockToUser", stockManagementController.addStockToUser);
 
 // /placeStockOrder endpoint
-router.post("/placeStockOrder", authenticateToken, async (req, res) => {
+router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
     try {
         const { stock_id, is_buy, order_type, quantity, price } = req.body;
         const db = await connectDB(); // Get MongoDB instance
@@ -125,9 +125,9 @@ router.get("/getOrderStatus/:order_id", authenticateToken, async (req, res) => {
 });
 
 // /cancel/Order endpoint, for internal use if we chopse to use it, not to be tested by TAs
-router.delete("/cancelOrder/:order_id", authenticateToken, async (req, res) => {
+router.delete("/engine/cancelStockTransaction", authenticateToken, async (req, res) => {
     try {
-        const { order_id } = req.params;
+        const { order_id } = req.body;
         const db = await connectDB();
 
         const order = await db.collection("orders").findOne({ _id: order_id });

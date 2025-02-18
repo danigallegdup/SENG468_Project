@@ -32,7 +32,7 @@ exports.createStock = async (req, res) => {
 exports.getStockPortfolio = async (req, res) => {
   try {
     const stocks = await UserHeldStock.find({ user_id: req.user.id });
-    return res.json({ success: true, data: { stocks } });
+    return res.json({ success: true, data: stocks });
   } catch (err) {
     return res.status(500).json({ success: false, data: { error: err.message } });
   }
