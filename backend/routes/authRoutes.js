@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
     const { user_name, password, name } = req.body;
 
     if (!user_name || !password || !name) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'All fields (user_name, password, name) are required' }
       });
@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
 
     const existingUser = await User.findOne({ username: user_name });
     if (existingUser) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'Username already exists' }
       });
@@ -52,7 +52,7 @@ router.post('/register', async (req, res) => {
     return res.status(201).json({ success: true, data: null });
   } catch (err) {
     console.error('Registration Error:', err);
-    return res.status(500).json({
+    return res.json({
       success: false,
       data: { error: 'Server error during registration' }
     });
@@ -71,7 +71,7 @@ router.post('/login', async (req, res) => {
     const { user_name, password } = req.body;
 
     if (!user_name || !password) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'Both user_name and password are required' }
       });
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
 
     const user = await User.findOne({ username: user_name });
     if (!user || user.hashed_password !== password) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'Invalid username or password' }
       });
@@ -95,7 +95,7 @@ router.post('/login', async (req, res) => {
     return res.json({ success: true, data: { token } });
   } catch (err) {
     console.error('Login Error:', err);
-    return res.status(500).json({
+    return res.json({
       success: false,
       data: { error: 'Server error during login' }
     });
