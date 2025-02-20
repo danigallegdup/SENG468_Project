@@ -40,15 +40,26 @@ exports.getStockPortfolio = async (req, res) => {
 
 exports.updateStockPortfolio = async (req, res) => {
   try {
-    const {user_id, stock_id, quantity} = req.body;
+    const {user_id, stock_id, quantity, is_buy} = req.body;
     console.log("user id: ", user_id);
     const userStock = await UserHeldStock.findOne({ user_id, stock_id });
-    if (!userStock) {
+    if (!userStock && !is_buy) {
       return res
         .status(404)
         .json({ success: false, data: { error: "User stock not found" } });
+    } else if (!userStock && is_buy) {
+      userStock = new UserHeldStock({
+        user_id,
+        stock_id,
+        quantity_owned: 0,
+        updated_at: new Date()
+      });
     }
-    userStock.quantity_owned = userStock.quantity_owned - quantity;
+    if (is_buy) {
+      userStock.quantity_owned = userStock.quantity_owned + quantity;
+    } else {
+      userStock.quantity_owned = userStock.quantity_owned - quantity;
+    }
     userStock.updated_at = new Date();
     console.log("user stock: ", userStock);
     if (userStock.quantity_owned <= 0) {

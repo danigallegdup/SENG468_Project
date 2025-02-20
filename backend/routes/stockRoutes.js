@@ -66,6 +66,7 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
                 user_id: newOrder.user_id,
                 stock_id: newOrder.stock_id,
                 quantity: quantity, // Adjust quantity based on buy/sell
+                is_buy: is_buy,
             },
             {
                 headers: {
@@ -178,21 +179,24 @@ router.get("/getOrderStatus/:order_id", authenticateToken, async (req, res) => {
 // /engine/cancelStockTransaction endpoint
 router.post("/engine/cancelStockTransaction", authenticateToken, async (req, res) => {
     try {
-        const { order_id } = req.body;
-        const db = require("mongoose").connection.db;
+        const { stock_tx_id } = req.body;
         
-        const order = await db.collection("orders").findOne({ _id: order_id });
+        const order = await Order.findOne({ stock_tx_id: stock_tx_id });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        if (order.status !== "IN_PROGRESS") {
+        if (order.order_status !== "IN_PROGRESS") {
             return res.status(400).json({ success: false, message: "Cannot cancel a completed or already canceled order" });
         }
 
         // Update order status to "CANCELED"
-        await db.collection("orders").updateOne({ _id: order_id }, { $set: { status: "CANCELED" } });
+        await Order
+          .updateOne(
+            { stock_tx_id: stock_tx_id },
+            { $set: { status: "CANCELED" } }
+          );
 
         res.json({ success: true, message: "Order successfully canceled." });
     } catch (error) {
