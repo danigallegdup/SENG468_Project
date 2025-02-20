@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
     const { user_name, password, name } = req.body;
 
     if (!user_name || !password || !name) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         data: { error: 'All fields (user_name, password, name) are required' }
       });
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
 
     const existingUser = await User.findOne({ username: user_name });
     if (existingUser) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         data: { error: 'Username already exists' }
       });
@@ -54,9 +54,9 @@ router.post('/register', async (req, res) => {
     return res.status(201).json({ success: true, data: null });
   } catch (err) {
     console.error('Registration Error:', err);
-    return res.json({
+    return res.status(500).json({
       success: false,
-      data: { error: 'Server error during registration' }
+      data: { error: "Server error during registration" },
     });
   }
 });
@@ -73,17 +73,17 @@ router.post('/login', async (req, res) => {
     const { user_name, password } = req.body;
 
     if (!user_name || !password) {
-      return res.json({
+      return res.status(400).json({
         success: false,
-        data: { error: 'Both user_name and password are required' }
+        data: { error: "Both user_name and password are required" },
       });
     }
 
     const user = await User.findOne({ username: user_name });
     if (!user || user.hashed_password !== password) {
-      return res.json({
+      return res.status(400).json({
         success: false,
-        data: { error: 'Invalid username or password' }
+        data: { error: "Invalid username or password" },
       });
     }
 
@@ -94,12 +94,12 @@ router.post('/login', async (req, res) => {
       { expiresIn: '5h' }
     );
 
-    return res.json({ success: true, data: { token } });
+    return res.status(201).json({ success: true, data: { token } });
   } catch (err) {
     console.error('Login Error:', err);
-    return res.json({
+    return res.status(500).json({
       success: false,
-      data: { error: 'Server error during login' }
+      data: { error: "Server error during login" },
     });
   }
 });
