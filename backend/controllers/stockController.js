@@ -5,7 +5,8 @@ exports.getStockTransactions = async (req, res) => {
     try {
         console.log(`Fetching stock transactions for user: ${req.user.id}`);
 
-        const transactions = await Order.find({ user_id: req.user.id }).sort({ timeStamp: 1 });
+        // Use the Order model’s "created_at" field (not "timeStamp")
+        const transactions = await Order.find({ user_id: req.user.id }).sort({ created_at: 1 });
 
         if (!transactions.length) {
             console.log("No stock transactions found.");

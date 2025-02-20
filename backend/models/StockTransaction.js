@@ -1,6 +1,3 @@
-// models/StockTransaction.js
-const mongoose = require('mongoose');
-
 const StockTransactionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     stockId: { type: mongoose.Schema.Types.ObjectId, ref: 'Stock', required: true },
@@ -10,7 +7,7 @@ const StockTransactionSchema = new mongoose.Schema({
     stockPrice: { type: Number, required: true },
     quantity: { type: Number, required: true },
     orderStatus: { type: String, enum: ['IN_PROGRESS', 'PARTIALLY_COMPLETE', 'COMPLETED', 'CANCELLED'], default: 'IN_PROGRESS' },
-    timeStamp: { type: Date, default: Date.now },
+    created_at: { type: Date, default: Date.now },  // renamed from timeStamp
     parentStockTxId: { type: mongoose.Schema.Types.ObjectId, ref: 'StockTransaction', default: null }
 });
 
