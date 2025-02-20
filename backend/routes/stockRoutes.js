@@ -1,4 +1,6 @@
-﻿const express = require("express");
+﻿// routes/stockRoutes.js
+
+const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -191,12 +193,10 @@ router.post("/engine/cancelStockTransaction", authenticateToken, async (req, res
             return res.status(400).json({ success: false, message: "Cannot cancel a completed or already canceled order" });
         }
 
-        // Update order status to "CANCELED"
-        await Order
-          .updateOne(
+        await Order.updateOne(
             { stock_tx_id: stock_tx_id },
-            { $set: { status: "CANCELED" } }
-          );
+            { $set: { order_status: "CANCELLED" } }
+        );
 
         res.json({ success: true, message: "Order successfully canceled." });
     } catch (error) {

@@ -1,3 +1,5 @@
+// services/matchingService.js
+
 const redis = require("../config/redis");
 const { connectDB } = require("../config/Mongo_connect");
 
@@ -97,6 +99,21 @@ async function executeTrade(buyOrder, sellOrder, quantity, db) {
         { _id: sellOrder.user_id },
         { $inc: { wallet_balance: quantity * buyOrder.price } }
     );
+
+    // Update order status to "COMPLETED" if fully filled**
+    if (buyOrder.quantity - quantity === 0) {
+        await db.collection("orders").updateOne(
+            { _id: buyOrder._id },
+            { $set: { order_status: "COMPLETED" } }
+        );
+    }
+
+    if (sellOrder.quantity - quantity === 0) {
+        await db.collection("orders").updateOne(
+            { _id: sellOrder._id },
+            { $set: { order_status: "COMPLETED" } }
+        );
+    }
 }
 
 // Refund the user if a market buy fails

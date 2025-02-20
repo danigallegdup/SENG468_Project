@@ -1,4 +1,6 @@
-// const StockTransaction = require('../models/StockTransaction');
+// controllers/stockController.js
+
+// const StockTransactions = require('../models/StockTransaction');
 const Order = require('../models/Order');
 
 exports.getStockTransactions = async (req, res) => {
