@@ -11,6 +11,7 @@ const stockController = require("../controllers/stockController");
 const stockManagementController = require("../controllers/stockManagementController");
 const Order = require("../models/Order");
 const { v4: uuidv4 } = require("uuid");
+const Stock = require("../models/Stock");
 
 router.use(authMiddleware);
 
@@ -35,6 +36,7 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid order type: BUY must be MARKET, SELL must be LIMIT" });
         }
 
+        
         // Construct a new order object
         const newOrder = new Order({
           user_id: req.user.id, // Attach authenticated user ID
@@ -59,24 +61,22 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
         await publishOrder(newOrder);
 
         console.log("Order placed:", newOrder);
-        if(!is_buy) {
-            await axios.post(
-            `${req.protocol}://${req.get(
-                "host"
-            )}/transaction/UpdateStockPortfolio`,
-            {
-                user_id: newOrder.user_id,
-                stock_id: newOrder.stock_id,
-                quantity: quantity, // Adjust quantity based on buy/sell
-                is_buy: is_buy,
+        await axios.post(
+        `${req.protocol}://${req.get(
+            "host"
+        )}/transaction/UpdateStockPortfolio`,
+        {
+            user_id: newOrder.user_id,
+            stock_id: newOrder.stock_id,
+            quantity: quantity, // Adjust quantity based on buy/sell
+            is_buy: is_buy,
+        },
+        {
+            headers: {
+            token: req.headers.token, // Pass the authorization header
             },
-            {
-                headers: {
-                token: req.headers.token, // Pass the authorization header
-                },
-            }
-            );
         }
+        );
 
         res.json({ success: true, data: newOrder });
     } catch (error) {
@@ -204,5 +204,19 @@ router.post("/engine/cancelStockTransaction", authenticateToken, async (req, res
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
+
+// router.get("/setup/getStockName", authenticateToken, async (req, res) => {
+//     try {
+//         const { stock_id } = req.body;
+//         const stock = await Stock.findById(stock_id);
+//         if (!stock) {
+//             return res.status(404).json({ success: false, message: "Stock not found" });
+//         }
+//         res.json({ success: true, data: stock.stock_name });
+//     } catch (error) {
+//         console.error("Error fetching stock name:", error);
+//         res.status(500).json({ success: false, message: "Internal Server Error" });
+//     }
+// });
 
 module.exports = router;
