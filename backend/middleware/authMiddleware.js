@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     console.log("Token Received:", token); // ✅ Check if token is being sent
 
     if (!token) {
-        return res.status(401).json({ success: false, message: 'Access Denied: No Token Provided' });
+        return res.status(400).json({ success: false, message: 'Access Denied: No Token Provided' });
     }
 
     try {
@@ -18,6 +18,6 @@ module.exports = (req, res, next) => {
         next();
     } catch (err) {
         console.error("JWT Verification Failed:", err);
-        res.status(400).json({ success: false, message: 'Invalid Token' });
+        res.status(401).json({ success: false, message: 'Invalid Token' });
     }
 };

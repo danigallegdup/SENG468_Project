@@ -1,6 +1,6 @@
-const express = require("express");
+﻿const express = require("express");
 const router = express.Router();
-const connectDB = require("../config/db");
+const mongoose = require("mongoose");
 const { publishOrder } = require("../config/rabbitmq");
 const authenticateToken = require("../middleware/authMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -64,21 +64,41 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
 // /getStockPrices/ endpoint
 router.get("/transaction/getStockPrices", authenticateToken, async (req, res) => {
     try {
-        const db = await connectDB();
-        const stocks = await db.collection("stocks").find({}).toArray();
+        const db = require("mongoose").connection.db;
 
-        res.json({ success: true, data: stocks });
+        // Fetch all stocks from the 'stocks' collection
+        const stocks = await db.collection("stocks")
+            .find({})
+            .sort({ stock_name: -1 }) // Sort by stock name (Z -> A)
+            .toArray();
+
+        // Iterate through stocks and fetch the lowest sell order price for each stock
+        for (const stock of stocks) {
+            const lowestSellOrder = await db.collection("orders")
+                .find({ stock_id: stock._id.toString(), is_buy: false, status: "IN_PROGRESS" })
+                .sort({ price: 1 }) // Sort by price ascending
+                .limit(1)
+                .toArray();
+
+            // Set the current price from the lowest sell order if available
+            stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].price : null;
+            stock.stock_id = stock._id.toString();
+            delete stock._id; // Remove the default _id field to match expected response
+        }
+
+        res.status(200).json({ success: true, data: stocks });
     } catch (error) {
         console.error("Error fetching stock prices:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 
+
 // /getSellOrders/ endpoint, for internal use if we choose to use it, not to be tested by TAs
 router.get("/getSellOrders/:stock_id", authenticateToken, async (req, res) => {
     try {
         const { stock_id } = req.params;
-        const db = await connectDB();
+        const db = require("mongoose").connection.db;
 
         const sellOrders = await db.collection("orders")
             .find({ stock_id, is_buy: false, status: "IN_PROGRESS" })
@@ -96,7 +116,7 @@ router.get("/getSellOrders/:stock_id", authenticateToken, async (req, res) => {
 router.get("/getBuyOrders/:stock_id", authenticateToken, async (req, res) => {
     try {
         const { stock_id } = req.params;
-        const db = await connectDB();
+        const db = require("mongoose").connection.db;
 
         const buyOrders = await db.collection("orders")
             .find({ stock_id, is_buy: true, status: "IN_PROGRESS" })
@@ -114,7 +134,7 @@ router.get("/getBuyOrders/:stock_id", authenticateToken, async (req, res) => {
 router.get("/getOrderStatus/:order_id", authenticateToken, async (req, res) => {
     try {
         const { order_id } = req.params;
-        const db = await connectDB();
+        const db = require("mongoose").connection.db;
 
         const order = await db.collection("orders").findOne({ _id: order_id });
 
@@ -129,12 +149,12 @@ router.get("/getOrderStatus/:order_id", authenticateToken, async (req, res) => {
     }
 });
 
-// /cancel/Order endpoint, for internal use if we chopse to use it, not to be tested by TAs
-router.delete("/engine/cancelStockTransaction", authenticateToken, async (req, res) => {
+// /engine/cancelStockTransaction endpoint
+router.post("/engine/cancelStockTransaction", authenticateToken, async (req, res) => {
     try {
         const { order_id } = req.body;
-        const db = await connectDB();
-
+        const db = require("mongoose").connection.db;
+        
         const order = await db.collection("orders").findOne({ _id: order_id });
 
         if (!order) {
