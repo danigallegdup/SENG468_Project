@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
     const { user_name, password, name } = req.body;
 
     if (!user_name || !password || !name) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'All fields (user_name, password, name) are required' }
       });
@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
 
     const existingUser = await User.findOne({ username: user_name });
     if (existingUser) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'Username already exists' }
       });
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
 
     const user = await User.findOne({ username: user_name });
     if (!user || user.hashed_password !== password) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         data: { error: 'Invalid username or password' }
       });

@@ -6,10 +6,12 @@ const authenticateToken = require("../middleware/authMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
 const stockController = require("../controllers/stockController");
 const stockManagementController = require("../controllers/stockManagementController");
+const Order = require("../models/Order");
+const { v4: uuidv4 } = require("uuid");
 
 router.use(authMiddleware);
 
-router.get("/getStockTransactions", stockController.getStockTransactions);
+router.get("/transaction/getStockTransactions", stockController.getStockTransactions);
 router.post("/setup/createStock", stockManagementController.createStock);
 router.get("/transaction/getStockPortfolio", stockManagementController.getStockPortfolio);
 router.post("/setup/addStockToUser", stockManagementController.addStockToUser);
@@ -18,7 +20,6 @@ router.post("/setup/addStockToUser", stockManagementController.addStockToUser);
 router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
     try {
         const { stock_id, is_buy, order_type, quantity, price } = req.body;
-        const db = require("mongoose").connection.db; // Get MongoDB instance
 
         // Validate required fields
         if (!stock_id || typeof is_buy === "undefined" || !order_type || !quantity) {
@@ -31,20 +32,24 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
         }
 
         // Construct a new order object
-        const newOrder = {
-            user_id: req.user.id, // Attach authenticated user ID
-            stock_id,
-            is_buy,
-            order_type,
-            quantity,
-            price: is_buy ? null : price, // BUY/MARKET has no price
-            status: "IN_PROGRESS",
-            created_at: new Date()
-        };
+        const newOrder = new Order({
+          user_id: req.user.id, // Attach authenticated user ID
+          stock_id, // Ensure stock_id is ObjectId
+          stock_tx_id: uuidv4(), // Ensure stock_tx_id is ObjectId
+          is_buy,
+          order_type,
+          quantity,
+          stock_price: is_buy ? null : price, // BUY/MARKET has no price
+          order_status: "IN_PROGRESS",
+          created_at: new Date(),
+          parent_stock_tx_id: null,
+          wallet_tx_id: null
+        });
 
         // Insert the order into MongoDB
-        const result = await db.collection("orders").insertOne(newOrder);
-        newOrder.stock_id = result.insertedId.toString(); // Store generated MongoDB ID
+        // const result = await db.collection("orders").insertOne(newOrder);
+        // newOrder._id = result.insertedId; // Store generated MongoDB ID
+        await newOrder.save();
 
         // Publish the order to RabbitMQ for async processing by the matching engine
         await publishOrder(newOrder);

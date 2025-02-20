@@ -1,10 +1,11 @@
-const StockTransaction = require('../models/StockTransaction');
+// const StockTransaction = require('../models/StockTransaction');
+const Order = require('../models/Order');
 
 exports.getStockTransactions = async (req, res) => {
     try {
         console.log(`Fetching stock transactions for user: ${req.user.id}`);
 
-        const transactions = await StockTransaction.find({ userId: req.user.id }).sort({ timeStamp: 1 });
+        const transactions = await Order.find({ user_id: req.user.id }).sort({ timeStamp: 1 });
 
         if (!transactions.length) {
             console.log("No stock transactions found.");
