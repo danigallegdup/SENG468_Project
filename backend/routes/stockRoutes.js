@@ -95,11 +95,16 @@ router.get("/transaction/getStockPrices", authenticateToken, async (req, res) =>
 
         // Iterate through stocks and fetch the lowest sell order price for each stock
         for (const stock of stocks) {
-            const lowestSellOrder = await db.collection("orders")
-                .find({ stock_id: stock._id.toString(), is_buy: false, status: "IN_PROGRESS" })
-                .sort({ price: 1 }) // Sort by price ascending
-                .limit(1)
-                .toArray();
+            const lowestSellOrder = await db
+              .collection("orders")
+              .find({
+                stock_id: stock._id.toString(),
+                is_buy: false,
+                order_status: "IN_PROGRESS",
+              })
+              .sort({ stock_price: 1 }) // Sort by price ascending
+              .limit(1)
+              .toArray();
 
             // Set the current price from the lowest sell order if available
             stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].stock_price : null;
