@@ -1,6 +1,7 @@
 // controllers/stockManagementController.js
 const Stock = require('../models/Stock');
 const UserHeldStock = require('../models/UserHeldStock');
+const axios = require('axios');
 
 /**
  * Create a new stock.
@@ -42,22 +43,32 @@ exports.updateStockPortfolio = async (req, res) => {
   try {
     const {user_id, stock_id, quantity, is_buy} = req.body;
     console.log("user id: ", user_id);
-    const userStock = await UserHeldStock.findOne({ user_id, stock_id });
+    let userStock = await UserHeldStock.findOne({ user_id, stock_id });
+    console.log("user stock: ", userStock);
+    const stockName = await Stock
+      .findById(stock_id)
+      .select("stock_name");
+    console.log("stock name: ", stockName);
     if (!userStock && !is_buy) {
+      console.log("User stock not found");
       return res
         .status(404)
         .json({ success: false, data: { error: "User stock not found" } });
     } else if (!userStock && is_buy) {
+      console.log("User stock not found, creating new");
       userStock = new UserHeldStock({
-        user_id,
+        user_id: req.user.id,
         stock_id,
+        stock_name: stockName.stock_name,
         quantity_owned: 0,
-        updated_at: new Date()
+        updated_at: new Date(),
       });
     }
     if (is_buy) {
+      console.log("buying stock");
       userStock.quantity_owned = userStock.quantity_owned + quantity;
     } else {
+      console.log("selling stock");
       userStock.quantity_owned = userStock.quantity_owned - quantity;
     }
     userStock.updated_at = new Date();
