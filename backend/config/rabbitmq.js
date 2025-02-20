@@ -1,11 +1,17 @@
 const amqp = require("amqplib");        // Import RabbitMQ
 
+const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq"; // Use service name for Docker
+
+let connection;
+let channel;
+
 // Function to publish an order message to RabbitMQ
 async function publishOrder(order) {
     try {
         // Connect to RabbitMQ
-        const connection = await amqp.connect("amqp://localhost");
-        const channel = await connection.createChannel();
+        console.log(`🔍 Connecting to RabbitMQ at ${RABBITMQ_URL}...`);
+        connection = await amqp.connect(RABBITMQ_URL);
+        channel = await connection.createChannel();
 
         // Ensure the order queue exists
         await channel.assertQueue("order_queue", { durable: true });

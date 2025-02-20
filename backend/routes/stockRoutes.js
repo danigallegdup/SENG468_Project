@@ -24,7 +24,7 @@ router.post("/transaction/UpdateStockPortfolio", stockManagementController.updat
 // /placeStockOrder endpoint
 router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
     try {
-        const { stock_id, is_buy, order_type, quantity, price } = req.body;
+        let { stock_id, is_buy, order_type, quantity, price } = req.body;
 
         // Validate required fields
         if (!stock_id || typeof is_buy === "undefined" || !order_type || !quantity) {
@@ -36,8 +36,6 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid order type: BUY must be MARKET, SELL must be LIMIT" });
         }
 
-        
-        // Construct a new order object
         const newOrder = new Order({
           user_id: req.user.id, // Attach authenticated user ID
           stock_id, // Ensure stock_id is ObjectId
@@ -58,24 +56,92 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
         await newOrder.save();
 
         // Publish the order to RabbitMQ for async processing by the matching engine
-        await publishOrder(newOrder);
 
         console.log("Order placed:", newOrder);
+
+        if (is_buy) {
+          // Find the lowest sell orders
+          const lowestSellOrders = await Order.find({
+            stock_id,
+            is_buy: false,
+            order_status: "IN_PROGRESS",
+          })
+            .sort({ stock_price: 1 })
+            .limit(1);
+          console.log("Lowest sell orders:", lowestSellOrders); // Debugging
+          if (lowestSellOrders.length === 0) {
+            await Order.updateOne(
+              { stock_tx_id: newOrder.stock_tx_id },
+              { $set: { order_status: "CANCELLED" } }
+            );
+            return res.json({ success: true, data: newOrder });
+          }
+
+          const lowestPrice = lowestSellOrders[0].stock_price;
+          console.log("Lowest price:", lowestPrice); // Debugging
+          const sellOrders = await Order.find({
+            stock_id,
+            is_buy: false,
+            order_status: "IN_PROGRESS",
+            stock_price: lowestPrice,
+          });
+          console.log("Sell orders at lowest price:", sellOrders); // Debugging
+
+          let totalAvailable = 0;
+          for (const sellOrder of sellOrders) {
+            totalAvailable += sellOrder.quantity;
+          }
+          console.log("Total available:", totalAvailable); // Debugging
+          if (totalAvailable < quantity) {
+            await Order.updateOne(
+              { stock_tx_id: newOrder.stock_tx_id },
+              { $set: { order_status: "CANCELLED" } }
+            );
+            return res.json({ success: true, data: newOrder });
+          }
+          // Loop through list of sell orders and match with buy order
+          for (let sellOrder of sellOrders) {
+            if (quantity === 0) {
+              break;
+            }
+            if (sellOrder.quantity <= quantity) {
+              quantity -= sellOrder.quantity;
+              await Order.updateOne(
+                { stock_tx_id: sellOrder.stock_tx_id },
+                { $set: { order_status: "COMPLETED" } }
+              );
+            } else {
+              await Order.updateOne(
+                { stock_tx_id: sellOrder.stock_tx_id },
+                { $set: { quantity: sellOrder.quantity - quantity } }
+              );
+              quantity = 0;
+            }
+          }
+
+          if (quantity === 0) {
+            await Order.updateOne(
+              { stock_tx_id: newOrder.stock_tx_id },
+              { $set: { order_status: "COMPLETED", stock_price: lowestPrice } }
+            );
+          }
+        }
+
         await axios.post(
-        `${req.protocol}://${req.get(
+          `${req.protocol}://${req.get(
             "host"
-        )}/transaction/UpdateStockPortfolio`,
-        {
+          )}/transaction/UpdateStockPortfolio`,
+          {
             user_id: newOrder.user_id,
             stock_id: newOrder.stock_id,
-            quantity: quantity, // Adjust quantity based on buy/sell
+            quantity: newOrder.quantity, // Adjust quantity based on buy/sell
             is_buy: is_buy,
-        },
-        {
+          },
+          {
             headers: {
-            token: req.headers.token, // Pass the authorization header
+              token: req.headers.token, // Pass the authorization header
             },
-        }
+          }
         );
 
         res.json({ success: true, data: newOrder });
