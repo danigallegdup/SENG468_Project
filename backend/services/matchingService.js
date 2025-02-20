@@ -73,48 +73,65 @@ async function processLimitSellOrder(order) {
 
 // Function to execute a trade
 async function executeTrade(buyOrder, sellOrder, quantity, db) {
+    const tradePrice = buyOrder.stock_price || sellOrder.stock_price;
+
+    console.log(`🔍 DEBUG: Executing trade - ${quantity} shares at $${tradePrice}`);
+    console.log(`🔍 DEBUG: Initial buyOrder quantity: ${buyOrder.quantity}, sellOrder quantity: ${sellOrder.quantity}`);
+
+    // Insert trade record
     await db.collection("transactions").insertOne({
         buy_order_id: buyOrder._id,
         sell_order_id: sellOrder._id,
         stock_id: buyOrder.stock_id,
         quantity,
-        price: buyOrder.price,
+        price: tradePrice,
         created_at: new Date()
     });
 
-    console.log(`Trade Executed: ${quantity} shares of ${buyOrder.stock_id} at $${buyOrder.price}`);
-
-    await db.collection("users").updateOne(
-        { _id: buyOrder.user_id },
-        { $inc: { wallet_balance: -quantity * buyOrder.price } }
+    // **🔹 Ensure stock price updates**
+    await db.collection("stocks").updateOne(
+        { _id: buyOrder.stock_id },
+        { $set: { latest_price: tradePrice } },
+        { upsert: true } // Ensure stock exists
     );
 
-    await db.collection("user_stocks").updateOne(
-        { user_id: buyOrder.user_id, stock_id: buyOrder.stock_id },
-        { $inc: { quantity } },
-        { upsert: true }
+    console.log(`✅ DEBUG: Stock price updated to ${tradePrice} for stock_id ${buyOrder.stock_id}`);
+
+    // **🔹 Reduce order quantities**
+    await db.collection("orders").updateOne(
+        { _id: buyOrder._id },
+        { $inc: { quantity: -quantity } }
     );
 
-    await db.collection("users").updateOne(
-        { _id: sellOrder.user_id },
-        { $inc: { wallet_balance: quantity * buyOrder.price } }
+    await db.collection("orders").updateOne(
+        { _id: sellOrder._id },
+        { $inc: { quantity: -quantity } }
     );
 
-    // Update order status to "COMPLETED" if fully filled**
-    if (buyOrder.quantity - quantity === 0) {
+    // **🔹 Fetch the updated orders to check the new quantity**
+    const updatedBuyOrder = await db.collection("orders").findOne({ _id: buyOrder._id });
+    const updatedSellOrder = await db.collection("orders").findOne({ _id: sellOrder._id });
+
+    console.log(`🔍 DEBUG: Updated buyOrder quantity: ${updatedBuyOrder.quantity}, Updated sellOrder quantity: ${updatedSellOrder.quantity}`);
+
+    // **🔹 Ensure orders transition to COMPLETED if fully matched**
+    if (updatedBuyOrder.quantity <= 0) {
         await db.collection("orders").updateOne(
             { _id: buyOrder._id },
-            { $set: { order_status: "COMPLETED" } }
+            { $set: { order_status: "COMPLETED", stock_price: tradePrice } }
         );
+        console.log(`✅ DEBUG: Buy order ${buyOrder._id} marked as COMPLETED`);
     }
 
-    if (sellOrder.quantity - quantity === 0) {
+    if (updatedSellOrder.quantity <= 0) {
         await db.collection("orders").updateOne(
             { _id: sellOrder._id },
-            { $set: { order_status: "COMPLETED" } }
+            { $set: { order_status: "COMPLETED", stock_price: tradePrice } }
         );
+        console.log(`✅ DEBUG: Sell order ${sellOrder._id} marked as COMPLETED`);
     }
 }
+
 
 // Refund the user if a market buy fails
 async function refundUser(order, db) {
