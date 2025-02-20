@@ -1,4 +1,6 @@
 // models/WalletTransaction.js
+// Schema for user wallets
+
 const mongoose = require('mongoose');
 
 const WalletSchema = new mongoose.Schema({

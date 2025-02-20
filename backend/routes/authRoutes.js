@@ -1,4 +1,6 @@
 /**
+ * // backend/routes/authRoutes.js
+ * // Routes for user authentication
  * 
  * @route   POST /api/auth/register
  * @route   POST /api/auth/login

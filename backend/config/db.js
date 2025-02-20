@@ -1,3 +1,6 @@
+// backend/config/db.js
+// MongoDB Connection Configuration
+
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 

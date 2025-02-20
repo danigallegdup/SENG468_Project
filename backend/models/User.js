@@ -1,4 +1,6 @@
 // models/User.js
+// Schema for user accounts
+
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({

@@ -1,4 +1,6 @@
 // controllers/walletController.js
+// manage wallet transactions
+
 const WalletTransaction = require('../models/WalletTransaction');
 const Wallet = require('../models/Wallet');
 

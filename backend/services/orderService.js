@@ -1,3 +1,6 @@
+// services/orderService.js 
+// Processes trade orders
+
 const redis = require("../config/redis");
 const { connectDB } = require("../config/db");
 const { publishOrder } = require("../config/rabbitmq");

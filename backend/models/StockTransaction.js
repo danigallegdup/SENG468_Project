@@ -1,4 +1,5 @@
 // models/StockTransaction.js
+// Schema for stock transactions
 const mongoose = require('mongoose');
 
 const StockTransactionSchema = new mongoose.Schema({

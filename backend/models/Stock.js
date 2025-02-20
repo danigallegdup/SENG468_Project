@@ -1,3 +1,6 @@
+// backend/models/Stock.js
+// Define the schema for the Stock model
+
 const mongoose = require("mongoose");
 
 const stockSchema = new mongoose.Schema({

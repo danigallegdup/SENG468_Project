@@ -1,5 +1,7 @@
 /**
  * routes/walletRoutes.js
+ * Routes for wallet operations
+ * 
  * @route   GET /getWalletBalance
  * @route   GET /getStockPortfolio
  * @route   GET /getWalletTransactions

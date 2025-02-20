@@ -1,4 +1,5 @@
 // services/matchingService.js
+// Implements stock matching algorithm
 
 const redis = require("../config/redis");
 const { connectDB } = require("../config/Mongo_connect");

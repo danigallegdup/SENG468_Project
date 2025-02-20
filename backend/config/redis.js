@@ -1,3 +1,6 @@
+// backend/config/redis.js
+// Redis caching configuration
+
 const redis = require("redis");
 const client = redis.createClient();        // Create Redis client instance
 

@@ -1,3 +1,6 @@
+// backend/models/Order.js
+// Define the schema for the Order model
+
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 

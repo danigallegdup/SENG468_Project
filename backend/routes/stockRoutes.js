@@ -1,4 +1,5 @@
 ﻿// routes/stockRoutes.js
+// Routes for retrieving stock data
 
 const express = require("express");
 const router = express.Router();

@@ -1,3 +1,6 @@
+// backend/config/rabbitmq.js
+// RabbitMQ messaging configuration
+
 const amqp = require("amqplib");        // Import RabbitMQ
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq"; // Use service name for Docker

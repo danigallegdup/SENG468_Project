@@ -1,3 +1,6 @@
+// backend/consumers/orderConsumer.js
+// RabbitMQ consumer to process incoming orders
+
 const amqp = require("amqplib");
 const { matchOrders } = require("../services/matchingService");
 

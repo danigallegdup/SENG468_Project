@@ -1,3 +1,6 @@
+// backend/config/clearDatabase.js
+// Script to reset the database
+
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 

@@ -1,4 +1,6 @@
 // models/UserHeldStock.js
+// Schema for stocks held by users
+
 const mongoose = require('mongoose');
 
 const UserHeldStockSchema = new mongoose.Schema({

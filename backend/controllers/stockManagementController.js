@@ -1,4 +1,6 @@
 // controllers/stockManagementController.js
+// manage stock transactions
+
 const Stock = require('../models/Stock');
 const UserHeldStock = require('../models/UserHeldStock');
 
