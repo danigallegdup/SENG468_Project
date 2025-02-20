@@ -47,7 +47,7 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
           order_status: "IN_PROGRESS",
           created_at: new Date(),
           parent_stock_tx_id: null,
-          wallet_tx_id: null
+          wallet_tx_id: null,
         });
 
         // Insert the order into MongoDB
@@ -122,7 +122,7 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
           if (quantity === 0) {
             await Order.updateOne(
               { stock_tx_id: newOrder.stock_tx_id },
-              { $set: { order_status: "COMPLETED", stock_price: lowestPrice } }
+              { $set: { order_status: "COMPLETED", stock_price: lowestPrice, wallet_tx_id: uuidv4() } }
             );
           }
         }
@@ -140,6 +140,8 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
                     amount: newOrder.stock_price * newOrder.quantity,
                     order_status: newOrder.order_status,
                     is_buy: is_buy,
+                    stock_tx_id: newOrder.stock_tx_id,
+                    wallet_tx_id: newOrder.wallet_tx_id,
                   },
                   {
                     headers: {
