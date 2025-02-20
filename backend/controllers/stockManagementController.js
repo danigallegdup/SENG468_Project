@@ -38,6 +38,32 @@ exports.getStockPortfolio = async (req, res) => {
   }
 };
 
+exports.updateStockPortfolio = async (req, res) => {
+  try {
+    const {user_id, stock_id, quantity} = req.body;
+    console.log("user id: ", user_id);
+    const userStock = await UserHeldStock.findOne({ user_id, stock_id });
+    if (!userStock) {
+      return res
+        .status(404)
+        .json({ success: false, data: { error: "User stock not found" } });
+    }
+    userStock.quantity_owned = userStock.quantity_owned - quantity;
+    userStock.updated_at = new Date();
+    console.log("user stock: ", userStock);
+    if (userStock.quantity_owned <= 0) {
+      await UserHeldStock.deleteOne({ _id: userStock._id });
+      return res.json({ success: true, data: null });
+    }
+    await userStock.save();
+    return res.json({ success: true, data: null });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, data: { error: "Update stock portfolio failed: "+ err.message } });
+  }
+}
+
 /**
  * Add stock to a user’s portfolio.
  * POST /api/stocks/addStockToUser
