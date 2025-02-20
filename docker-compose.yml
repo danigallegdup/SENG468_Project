@@ -3,46 +3,16 @@ version: "3.9"
 services:
   front-end:
     build:
-      context: ./day-trading-app
+        context: ./day-trading-app
     container_name: front-end
     ports:
       - "3000:3000"
-    networks:
-      - app-network
-
+  
   back-end:
     build:
-      context: ./backend
+        context: ./backend
     container_name: back-end
     ports:
       - "5001:5001"
     environment:
       - NODE_ENV=development
-      - RABBITMQ_URL=amqp://rabbitmq  # Ensure backend connects to RabbitMQ
-    depends_on:
-      rabbitmq:
-        condition: service_healthy  # Ensures RabbitMQ is ready before backend starts
-    networks:
-      - app-network
-
-  rabbitmq:
-    image: rabbitmq:3-management  # RabbitMQ with web UI for debugging
-    container_name: rabbitmq
-    restart: always
-    ports:
-      - "5672:5672"   # AMQP protocol port (used by backend)
-      - "15672:15672" # Management UI (for debugging)
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    healthcheck:  # Ensures RabbitMQ is ready before backend tries to connect
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge

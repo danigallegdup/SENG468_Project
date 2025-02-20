@@ -1,4 +1,3 @@
-// consumers/orderConsumer.js
 const amqp = require("amqplib");
 const { matchOrders } = require("../services/matchingService");
 
