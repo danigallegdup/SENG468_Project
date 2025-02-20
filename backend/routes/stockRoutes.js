@@ -1,6 +1,7 @@
 ﻿const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const axios = require("axios");
 const { publishOrder } = require("../config/rabbitmq");
 const authenticateToken = require("../middleware/authMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -15,6 +16,7 @@ router.get("/transaction/getStockTransactions", stockController.getStockTransact
 router.post("/setup/createStock", stockManagementController.createStock);
 router.get("/transaction/getStockPortfolio", stockManagementController.getStockPortfolio);
 router.post("/setup/addStockToUser", stockManagementController.addStockToUser);
+router.post("/transaction/UpdateStockPortfolio", stockManagementController.updateStockPortfolio);
 
 // /placeStockOrder endpoint
 router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
@@ -53,6 +55,25 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
 
         // Publish the order to RabbitMQ for async processing by the matching engine
         await publishOrder(newOrder);
+
+        console.log("Order placed:", newOrder);
+        if(!is_buy) {
+            await axios.post(
+            `${req.protocol}://${req.get(
+                "host"
+            )}/transaction/UpdateStockPortfolio`,
+            {
+                user_id: newOrder.user_id,
+                stock_id: newOrder.stock_id,
+                quantity: quantity, // Adjust quantity based on buy/sell
+            },
+            {
+                headers: {
+                token: req.headers.token, // Pass the authorization header
+                },
+            }
+            );
+        }
 
         res.json({ success: true, data: newOrder });
     } catch (error) {
