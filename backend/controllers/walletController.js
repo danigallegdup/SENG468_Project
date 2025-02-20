@@ -1,4 +1,5 @@
 /**
+ * controllers/walletController.js
  * getWalletTransactions
  * getWalletBalance
  * addMoneyToWallet
