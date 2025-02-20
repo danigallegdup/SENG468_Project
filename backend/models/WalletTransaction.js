@@ -7,7 +7,7 @@ const WalletTransactionSchema = new mongoose.Schema({
     type: { type: String, enum: ['deposit', 'withdrawal'], required: true },
     stock_tx_id: { type: String, default: null },
     wallet_tx_id: { type: String, default: null },
-    is_debit: { type: Boolean, default: null },
+    is_debit: { type: Boolean, default: true },
     timeStamp: { type: Date, default: Date.now },
     balance: { type: Number, required: true }
 });

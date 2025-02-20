@@ -1,5 +1,6 @@
 // controllers/walletController.js
 const WalletTransaction = require('../models/WalletTransaction');
+const Wallet = require('../models/Wallet');
 
 exports.getWalletTransactions = async (req, res) => {
     try {
@@ -20,7 +21,7 @@ exports.getWalletTransactions = async (req, res) => {
 exports.getWalletBalance = async (req, res) => {
     try {
         // Fetch the latest transaction by sorting with the actual timestamp in descending order.
-        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+        const lastTransaction = await Wallet.findOne({ userId: req.user.id })
             .sort({ timeStamp: 'desc' })
             .exec();
         const balance = lastTransaction ? lastTransaction.balance : 0;
@@ -47,10 +48,8 @@ exports.addMoneyToWallet = async (req, res) => {
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
         const newBalance = currentBalance + amount;
   
-        const newTransaction = new WalletTransaction({
+        const newTransaction = new Wallet({
             userId: req.user.id,
-            amount,
-            type: 'deposit',
             balance: newBalance,
             timeStamp: new Date() // Set the actual timestamp when the transaction is made.
         });
@@ -64,7 +63,7 @@ exports.addMoneyToWallet = async (req, res) => {
 
 exports.updateWallet = async (req, res) => {
     try {
-        const { amount, order_status, is_buy } = req.body;
+        const { amount, order_status, is_buy, stock_tx_id, wallet_tx_id } = req.body;
         console.log("Order status: ", order_status);
         if (order_status !== 'COMPLETED') {
             return res.status(400).json({
@@ -89,7 +88,7 @@ exports.updateWallet = async (req, res) => {
   
         console.log("Updating wallet...");
         // Get the current balance from the most recent transaction using the actual timestamp.
-        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+        const lastTransaction = await Wallet.findOne({ userId: req.user.id })
             .sort({ timeStamp: 'desc' })
             .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
@@ -100,17 +99,17 @@ exports.updateWallet = async (req, res) => {
             // Buy order: deduct funds.
             newBalance = currentBalance - amount;
             transactionType = 'withdrawal';
-        } else {
-            // Sell order: add funds.
-            newBalance = currentBalance + amount;
-            transactionType = 'deposit';
         }
+        lastTransaction.balance = newBalance;
+        await lastTransaction.save();
   
         const newTransaction = new WalletTransaction({
             userId: req.user.id,
             amount,
             type: transactionType,
             balance: newBalance,
+            stock_tx_id,
+            wallet_tx_id,
             timeStamp: new Date() // Actual timestamp when the transaction is made.
         });
         console.log("New balance: ", newBalance);
