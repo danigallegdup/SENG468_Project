@@ -30,6 +30,7 @@
 - [Project Overview](./Documents/Project_Overview1.pdfDocuments\Project_Overview1.pdf) for Reference
 
 # File Structure
+
 ## Backend
 /backend: Root backend directory of the Day Trading App.
 /backend/config: Contains configuration files for MongoDB database, Redis Caching, and RabbitMQ messaging.
