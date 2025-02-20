@@ -1,7 +1,6 @@
 // controllers/stockManagementController.js
 const Stock = require('../models/Stock');
 const UserHeldStock = require('../models/UserHeldStock');
-const axios = require('axios');
 
 /**
  * Create a new stock.

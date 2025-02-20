@@ -4,7 +4,7 @@ const amqp = require("amqplib");        // Import RabbitMQ
 async function publishOrder(order) {
     try {
         // Connect to RabbitMQ
-        const connection = await amqp.connect("amqp://rabbitmq");
+        const connection = await amqp.connect("amqp://localhost");
         const channel = await connection.createChannel();
 
         // Ensure the order queue exists

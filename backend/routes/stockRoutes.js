@@ -61,7 +61,6 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
         await publishOrder(newOrder);
 
         console.log("Order placed:", newOrder);
-        // if(!is_buy) {
         await axios.post(
         `${req.protocol}://${req.get(
             "host"
@@ -78,7 +77,6 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
             },
         }
         );
-        // }
 
         res.json({ success: true, data: newOrder });
     } catch (error) {
