@@ -35,7 +35,7 @@ exports.getWalletTransactions = async (req, res) => {
 exports.getWalletBalance = async (req, res) => {
     try {
         const transactions = await WalletTransaction.find({ userId: req.user.id });
-        // let balance = 0;
+        let balance = 0;
 
         transactions.forEach(tx => {
             if (tx.type === 'deposit') {
