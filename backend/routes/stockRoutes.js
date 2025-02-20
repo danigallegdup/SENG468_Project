@@ -102,7 +102,7 @@ router.get("/transaction/getStockPrices", authenticateToken, async (req, res) =>
                 .toArray();
 
             // Set the current price from the lowest sell order if available
-            stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].price : null;
+            stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].stock_price : null;
             stock.stock_id = stock._id.toString();
             delete stock._id; // Remove the default _id field to match expected response
         }
