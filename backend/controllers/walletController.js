@@ -37,7 +37,7 @@ exports.addMoneyToWallet = async (req, res) => {
         if (!amount || amount <= 0) {
             return res.status(400).json({
                 success: false,
-                data: { error: "Amount must be a positive number" }
+                data: { error: "amount must be a positive number" }
             });
         }
         // Retrieve the current balance from the most recent transaction.
@@ -64,19 +64,22 @@ exports.addMoneyToWallet = async (req, res) => {
 
 exports.updateWallet = async (req, res) => {
     try {
-        const { amount, orderStatus, is_buy } = req.body;
-        if (orderStatus !== 'COMPLETED') {
+        const { amount, order_status, is_buy } = req.body;
+        console.log("Order status: ", order_status);
+        if (order_status !== 'COMPLETED') {
             return res.status(400).json({
                 success: false,
                 data: { error: "Order is not completed; wallet not updated" }
             });
         }
+        console.log("Amount: ", amount);
         if (!amount || amount <= 0) {
             return res.status(400).json({
                 success: false,
                 data: { error: "Amount must be a positive number" }
             });
         }
+        console.log("Is buy: ", is_buy);
         if (typeof is_buy === 'undefined') {
             return res.status(400).json({
                 success: false,
@@ -84,12 +87,14 @@ exports.updateWallet = async (req, res) => {
             });
         }
   
+        console.log("Updating wallet...");
         // Get the current balance from the most recent transaction using the actual timestamp.
         const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
             .sort({ timeStamp: 'desc' })
             .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
-  
+        console.log("Current balance: ", currentBalance);
+
         let newBalance, transactionType;
         if (is_buy) {
             // Buy order: deduct funds.
@@ -108,6 +113,7 @@ exports.updateWallet = async (req, res) => {
             balance: newBalance,
             timeStamp: new Date() // Actual timestamp when the transaction is made.
         });
+        console.log("New balance: ", newBalance);
         await newTransaction.save();
         return res.json({ success: true, data: null });
     } catch (err) {

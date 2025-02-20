@@ -36,7 +36,7 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid order type: BUY must be MARKET, SELL must be LIMIT" });
         }
 
-        const newOrder = new Order({
+        let newOrder = new Order({
           user_id: req.user.id, // Attach authenticated user ID
           stock_id, // Ensure stock_id is ObjectId
           stock_tx_id: uuidv4(), // Ensure stock_tx_id is ObjectId
@@ -125,6 +125,29 @@ router.post("/engine/placeStockOrder", authenticateToken, async (req, res) => {
               { $set: { order_status: "COMPLETED", stock_price: lowestPrice } }
             );
           }
+        }
+
+        if (is_buy) {
+            newOrder = await Order.findOne({ stock_tx_id: newOrder.stock_tx_id });
+            if (newOrder.order_status === "COMPLETED") {
+                console.log("Order completed:", newOrder);
+                console.log("Updating wallet balance...");
+                await axios.post(
+                  `${req.protocol}://${req.get(
+                    "host"
+                  )}/transaction/updateWallet`,
+                  {
+                    amount: newOrder.stock_price * newOrder.quantity,
+                    order_status: newOrder.order_status,
+                    is_buy: is_buy,
+                  },
+                  {
+                    headers: {
+                      token: req.headers.token, // Pass the authorization header
+                    },
+                  }
+                );
+            }
         }
 
         await axios.post(
