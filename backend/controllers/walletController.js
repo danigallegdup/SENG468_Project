@@ -1,10 +1,3 @@
-/**
- * getWalletTransactions
- * getWalletBalance
- * addMoneyToWallet
- */
-
-
 // controllers/walletController.js
 const WalletTransaction = require('../models/WalletTransaction');
 
@@ -12,12 +5,10 @@ exports.getWalletTransactions = async (req, res) => {
     try {
         console.log(`Fetching wallet transactions for user: ${req.user.id}`);
         const transactions = await WalletTransaction.find({ userId: req.user.id }).sort({ timeStamp: 1 });
-
         if (!transactions.length) {
             console.log("No wallet transactions found.");
             return res.status(200).json({ success: true, message: "No transactions available.", data: [] });
         }
-
         console.log("Wallet transactions retrieved successfully.");
         res.json({ success: true, data: transactions });
     } catch (err) {
@@ -26,23 +17,12 @@ exports.getWalletTransactions = async (req, res) => {
     }
 };
 
-/**
- * @desc    Retrieve wallet balance for the logged-in user
- * @route   GET /getWalletBalance
- * @return  { success: true, data: { balance: <computed_balance> } }
- */
 exports.getWalletBalance = async (req, res) => {
     try {
-        const transactions = await WalletTransaction.find({ userId: req.user.id });
-        let balance = 0;
-
-        transactions.forEach(tx => {
-            if (tx.type === 'deposit') {
-                balance += tx.amount;
-            } else if (tx.type === 'withdrawal') {
-                balance -= tx.amount;
-            }
-        });
+        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+            .sort({ timeStamp: 'desc' })
+            .exec();
+        const balance = lastTransaction ? lastTransaction.balance : 0;
         return res.json({ success: true, data: { balance } });
     } catch (err) {
         console.error("Error fetching wallet balance:", err);
@@ -50,12 +30,6 @@ exports.getWalletBalance = async (req, res) => {
     }
 };
 
-/**
- * @desc    Add money to the wallet for the logged-in user
- * @route   POST /addMoneyToWallet
- * @body    { amount: Number }
- * @return  { success: true, data: null }
- */
 exports.addMoneyToWallet = async (req, res) => {
     try {
         const { amount } = req.body;
@@ -66,10 +40,18 @@ exports.addMoneyToWallet = async (req, res) => {
             });
         }
 
+        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+            .sort({ timeStamp: 'desc' })
+            .exec();
+        const currentBalance = lastTransaction ? lastTransaction.balance : 0;
+        const newBalance = currentBalance + amount;
+  
         const newTransaction = new WalletTransaction({
             userId: req.user.id,
             amount,
-            type: 'deposit'
+            type: 'deposit',
+            balance: newBalance,
+            timeStamp: new Date()
         });
         await newTransaction.save();
         return res.json({ success: true, data: null });
@@ -79,14 +61,6 @@ exports.addMoneyToWallet = async (req, res) => {
     }
 };
 
-
-/**
- * @desc    Update the wallet after an order is complete (buy/sell)
- * @route   POST /updateWallet
- * @body    { amount: Number, type: 'deposit' | 'withdrawal', orderStatus: String }
- *          (orderStatus should be 'COMPLETED' to trigger the update)
- * @return  { success: true, data: null }
- */
 exports.updateWallet = async (req, res) => {
     try {
         const { amount, type, orderStatus } = req.body;
@@ -108,22 +82,24 @@ exports.updateWallet = async (req, res) => {
                 data: { error: "Invalid transaction type" }
             });
         }
-
-        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id }).sort({ timeStamp: -1 });
+  
+        const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+            .sort({ timeStamp: 'desc' })
+            .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
-
-        let newBalance = type === 'deposit'
+  
+        const newBalance = type === 'deposit'
             ? currentBalance + amount
             : currentBalance - amount;
-
+  
         const newTransaction = new WalletTransaction({
             userId: req.user.id,
             amount,
             type,
             balance: newBalance,
+            timeStamp: new Date() 
         });
         await newTransaction.save();
-
         return res.json({ success: true, data: null });
     } catch (err) {
         console.error("Error updating wallet:", err);
