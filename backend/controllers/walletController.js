@@ -1,10 +1,7 @@
-// controllers/walletController.js
-const WalletTransaction = require('../models/WalletTransaction');
-
 exports.getWalletTransactions = async (req, res) => {
     try {
         console.log(`Fetching wallet transactions for user: ${req.user.id}`);
-        const transactions = await WalletTransaction.find({ userId: req.user.id }).sort({ timeStamp: 1 });
+        const transactions = await WalletTransaction.find({ userId: req.user.id }).sort({ created_at: 1 });
         if (!transactions.length) {
             console.log("No wallet transactions found.");
             return res.status(200).json({ success: true, message: "No transactions available.", data: [] });
@@ -19,9 +16,8 @@ exports.getWalletTransactions = async (req, res) => {
 
 exports.getWalletBalance = async (req, res) => {
     try {
-        // Fetch the latest transaction by sorting with the actual timestamp in descending order.
         const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
-            .sort({ timeStamp: 'desc' })
+            .sort({ created_at: -1 })
             .exec();
         const balance = lastTransaction ? lastTransaction.balance : 0;
         return res.json({ success: true, data: { balance } });
@@ -40,9 +36,9 @@ exports.addMoneyToWallet = async (req, res) => {
                 data: { error: "Amount must be a positive number" }
             });
         }
-        // Retrieve the current balance from the most recent transaction.
+
         const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
-            .sort({ timeStamp: 'desc' })
+            .sort({ created_at: -1 })
             .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
         const newBalance = currentBalance + amount;
@@ -52,7 +48,7 @@ exports.addMoneyToWallet = async (req, res) => {
             amount,
             type: 'deposit',
             balance: newBalance,
-            timeStamp: new Date() // Set the actual timestamp when the transaction is made.
+            created_at: new Date()  // updated field name
         });
         await newTransaction.save();
         return res.json({ success: true, data: null });
@@ -83,20 +79,17 @@ exports.updateWallet = async (req, res) => {
                 data: { error: "is_buy flag is required" }
             });
         }
-  
-        // Get the current balance from the most recent transaction using the actual timestamp.
+
         const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
-            .sort({ timeStamp: 'desc' })
+            .sort({ created_at: -1 })
             .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
   
         let newBalance, transactionType;
         if (is_buy) {
-            // Buy order: deduct funds.
             newBalance = currentBalance - amount;
             transactionType = 'withdrawal';
         } else {
-            // Sell order: add funds.
             newBalance = currentBalance + amount;
             transactionType = 'deposit';
         }
@@ -106,7 +99,7 @@ exports.updateWallet = async (req, res) => {
             amount,
             type: transactionType,
             balance: newBalance,
-            timeStamp: new Date() // Actual timestamp when the transaction is made.
+            created_at: new Date()  // updated field name
         });
         await newTransaction.save();
         return res.json({ success: true, data: null });
@@ -115,4 +108,3 @@ exports.updateWallet = async (req, res) => {
         return res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
