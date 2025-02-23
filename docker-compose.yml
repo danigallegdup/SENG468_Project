@@ -3,16 +3,36 @@ version: "3.9"
 services:
   front-end:
     build:
-        context: ./day-trading-app
+      context: ./day-trading-app
     container_name: front-end
     ports:
       - "3000:3000"
+    networks:
+      - backend-network
   
-  back-end:
+  auth-service:
     build:
-        context: ./backend
-    container_name: back-end
+      context: ./backend/auth
+    container_name: auth-service
     ports:
-      - "5001:5001"
+      - "3001:3001"
     environment:
       - NODE_ENV=development
+    networks:
+      - backend-network
+
+  api-gateway:
+    image: nginx:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"  # API Gateway is exposed on port 8080
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mount custom Nginx config
+    depends_on:
+      - auth-service
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
