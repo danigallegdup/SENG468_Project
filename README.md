@@ -2,16 +2,17 @@
 
 ## How to run
 
-""
-docker-compose up --build
+## How to Run the Project
 
-""
+```sh
+docker-compose up --build
+```
 
 ## How to Test
 
-""
+```sh
 jmeter -n -t ./Sample_test_script.jmx -l results.log -e -o ./results/
-""
+```
 
 ## File Structure
 
