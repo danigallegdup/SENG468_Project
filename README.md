@@ -1,4 +1,17 @@
-# SENG468_Project
+# Test Run 1 Submission
+
+## How to run
+
+""
+docker-compose up --build
+
+""
+
+## How to Test
+
+""
+jmeter -n -t ./Sample_test_script.jmx -l results.log -e -o ./results/
+""
 
 ## File Structure
 
