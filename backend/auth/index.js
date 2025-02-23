@@ -8,12 +8,20 @@
 
 // routes/authRoutes.js
 const express = require('express');
-const router = express.Router();
-const User = require('../auth/User');
+const User = require('./User');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
+const cors = require("cors");
+const connectDB = require("./db");
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
 dotenv.config();
+connectDB();
+
 
 /**
  * @route   POST /api/auth/register
@@ -22,7 +30,7 @@ dotenv.config();
  * @return  { success: true, data: null } on success,
  *          { success: false, data: { error: <errorMessage> } } on failure.
  */
-router.post('/register', async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
     const { user_name, password, name } = req.body;
 
@@ -68,7 +76,7 @@ router.post('/register', async (req, res) => {
  * @return  { success: true, data: { token } } on success,
  *          { success: false, data: { error: <errorMessage> } } on failure.
  */
-router.post('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     const { user_name, password } = req.body;
 
@@ -104,4 +112,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Start Server
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+    console.log(`🚀 Authentication Server running on port ${PORT}`);
+});
