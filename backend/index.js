@@ -8,7 +8,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const stockRoutes = require("./routes/stockRoutes");
-const User = require("./models/User");
+const User = require("./auth/User");
 
 dotenv.config();
 

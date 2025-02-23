@@ -9,7 +9,7 @@
 // routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const User = require('../auth/User');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
