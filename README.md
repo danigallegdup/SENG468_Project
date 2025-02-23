@@ -1,7 +1,5 @@
 # Test Run 1 Submission
 
-## How to run
-
 ## How to Run the Project
 
 ```sh
