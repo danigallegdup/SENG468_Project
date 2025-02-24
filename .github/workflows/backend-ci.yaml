@@ -15,9 +15,6 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-  install-docker:
-    runs-on: ubuntu-latest
-    steps:
     - name: Install Docker Compose
       run: |
         sudo apt-get update
@@ -29,9 +26,6 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
       run: docker-compose -f docker-compose.yml up --build -d --abort-on-container-exit
 
-  install-jmeter:
-    runs-on: ubuntu-latest
-    steps:
     - name: Install jmeter
       run: sudo apt-get install jmeter
     
@@ -39,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps: 
+    - uses: actions/checkout@v2
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l sample_test_script2.jtl
     
