@@ -27,13 +27,8 @@ jobs:
       run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install jmeter
-      run: sudo apt-get install jmeter
-    
-  test:
-    runs-on: ubuntu-latest
-
-    steps: 
-    - uses: actions/checkout@v2
+      run: sudo apt-get install JMeter
+      
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l sample_test_script2.jtl
     
