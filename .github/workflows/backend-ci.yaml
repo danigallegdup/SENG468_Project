@@ -1,0 +1,30 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run docker compose
+      run: docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+    - name: Install jmeter
+      run: sudo apt-get install jmeter
+    
+    - name: Run sample_test_script2
+      run: jmeter -n -t ./Sample_test_script2.jmx -l sample_test_script2.jtl
+    
+    - name: Verify test results
+      run: cat sample_test_script2.jtl
+
+    - name: Make sure test passed
+      run: grep -q "false" sample_test_script2.jtl && exit 1 || exit 0
+    
+    - name: Stop docker compose
+      run: docker-compose -f docker-compose.test.yml down
