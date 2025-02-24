@@ -24,7 +24,7 @@ jobs:
       env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      run: docker-compose -f docker-compose.yml up --build -d --abort-on-container-exit
+      run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install jmeter
       run: sudo apt-get install jmeter
@@ -44,4 +44,4 @@ jobs:
       run: grep -q "false" sample_test_script2.jtl && exit 1 || exit 0
     
     - name: Stop docker compose
-      run: docker-compose -f docker-compose.test.yml down
+      run: docker-compose -f docker-compose.yml down
