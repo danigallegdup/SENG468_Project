@@ -26,9 +26,9 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
       run: docker-compose -f docker-compose.yml up --build -d
 
-    - name: Install jmeter
-      run: sudo apt-get install JMeter
-      
+    - name: Install JMeter
+      run: sudo apt-get install -y jmeter
+
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l sample_test_script2.jtl
     
