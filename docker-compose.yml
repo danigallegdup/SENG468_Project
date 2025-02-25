@@ -18,6 +18,8 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - backend-network
 
