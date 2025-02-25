@@ -33,6 +33,8 @@ jobs:
       with:
         test-plan-path: Sample_test_script2.jmx
         args: ''
+    
+
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
