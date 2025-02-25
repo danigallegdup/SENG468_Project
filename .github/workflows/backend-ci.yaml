@@ -20,11 +20,22 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
+    - name: Create .env file
+      run: |
+        echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
     - name: Run docker compose
       run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install JMeter
       run: sudo apt-get install -y jmeter
+
+    - name: Create JMeter configuration directory
+      run: sudo mkdir -p /etc/jmeter
+
+    - name: Copy custom JMeter properties
+      run: sudo cp custom_jmeter.properties /etc/jmeter/jmeter.properties
 
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l log.jtl
@@ -33,6 +44,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: log
+        path: log.jtl
 
     - name: Make sure test passed
       run: |
