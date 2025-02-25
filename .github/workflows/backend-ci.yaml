@@ -1,50 +1,54 @@
-# name: Backend CI
+name: Backend CI
 
-# on:
-#   pull_request:
-# #     branches:
-# #       - '**'
+on:
+  pull_request:
+    branches:
+      - '**'
 
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
+jobs:
+  test:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - uses: actions/checkout@v2
+    steps:
+    - uses: actions/checkout@v2
 
-#     - name: Set up Docker Buildx
-#       uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-#     - name: Install Docker Compose
-#       run: |
-#         sudo apt-get update
-#         sudo apt-get install -y docker-compose
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
 
-#     - name: Run docker compose
-#       run: docker-compose -f docker-compose.yml up --build -d
+    - name: Run docker compose
+      run: docker-compose -f docker-compose.yml up --build -d
 
-#     - name: Install JMeter
-#       run: sudo apt-get install -y jmeter
+    - name: Install JMeter
+      run: sudo apt-get install -y jmeter
 
-#     - name: Copy custom JMeter properties
-#       run: cp custom_jmeter.properties /etc/jmeter/jmeter.properties
+    - name: Create JMeter configuration directory
+      run: sudo mkdir -p /etc/jmeter
 
-#     - name: Run sample_test_script2
-#       run: jmeter -n -t ./Sample_test_script2.jmx -l results.log
+    - name: Copy custom JMeter properties
+      run: sudo cp custom_jmeter.properties /etc/jmeter/jmeter.properties
+
+    - name: Run sample_test_script2
+      run: jmeter -n -t ./Sample_test_script2.jmx -l results.log
     
-#     - name: Archive results.log file and upload to GitHub
-#       uses: actions/upload-artifact@v4
-#       with:
-#         name: results
+    - name: Archive results.log file and upload to GitHub
+      uses: actions/upload-artifact@v4
+      with:
+        name: results
+        path: results.log
 
-#     - name: Make sure test passed
-#       run: |
-#         if grep -q "false" results.log; then
-#           echo "Test failed"
-#           exit 1
-#         else
-#           echo "Test passed"
-#         fi
+    - name: Make sure test passed
+      run: |
+        if grep -q "false" results.log; then
+          echo "Test failed"
+          exit 1
+        else
+          echo "Test passed"
+        fi
     
-#     - name: Stop docker compose
-#       run: docker-compose -f docker-compose.yml down
+    - name: Stop docker compose
+      run: docker-compose -f docker-compose.yml down
