@@ -26,7 +26,7 @@ jobs:
         echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
     - name: Run docker compose
-      run: docker-compose -f docker-compose.yml up --build
+      run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Run JMeter Tests
       uses: QAInsights/PerfAction@v3.1
