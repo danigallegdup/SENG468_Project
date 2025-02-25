@@ -24,26 +24,19 @@ jobs:
       run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install JMeter
-      run: sudo apt-get install -y jmeter
-
-    - name: Create JMeter configuration directory
-      run: sudo mkdir -p /etc/jmeter
-
-    - name: Copy custom JMeter properties
-      run: sudo cp custom_jmeter.properties /etc/jmeter/jmeter.properties
+      run: sudo apt-get install -
 
     - name: Run sample_test_script2
-      run: jmeter -n -t ./Sample_test_script2.jmx -l results.log
+      run: jmeter -n -t ./Sample_test_script2.jmx -l log.jtl
     
-    - name: Archive results.log file and upload to GitHub
+    - name: Archive log file and upload to GitHub
       uses: actions/upload-artifact@v4
       with:
-        name: results
-        path: results.log
+        name: log
 
     - name: Make sure test passed
       run: |
-        if grep -q "false" results.log; then
+        if grep -q "false" log.jtl; then
           echo "Test failed"
           exit 1
         else
