@@ -6,7 +6,7 @@ on:
       - '**'
 
 jobs:
-  set-up:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,13 +21,13 @@ jobs:
         sudo apt-get install -y docker-compose
 
     - name: Run docker compose
-      env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
       run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install JMeter
       run: sudo apt-get install -y jmeter
+
+    - name: Copy custom JMeter properties
+      run: cp custom_jmeter.properties /etc/jmeter/jmeter.properties
 
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l results.log
