@@ -24,7 +24,7 @@ jobs:
       run: docker-compose -f docker-compose.yml up --build -d
 
     - name: Install JMeter
-      run: sudo apt-get install -
+      run: sudo apt-get install -y jmeter
 
     - name: Run sample_test_script2
       run: jmeter -n -t ./Sample_test_script2.jmx -l log.jtl
