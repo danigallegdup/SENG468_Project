@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
  * 3) Once matched, calls other microservices to update wallet & stock portfolio
  * ----------------------------------------------------------------
  */
-app.post('/orders/place', authMiddleware, async (req, res) => {
+app.post('/engine/placeStockOrder', authMiddleware, async (req, res) => {
   try {
     const { stock_id, is_buy, order_type, quantity, price } = req.body;
 
@@ -158,7 +158,7 @@ app.post('/orders/place', authMiddleware, async (req, res) => {
  * Cancel an order that is IN_PROGRESS
  * ----------------------------------------------------------------
  */
-app.post('/orders/cancel', authMiddleware, async (req, res) => {
+app.post('/engine/cancelStockTransaction', authMiddleware, async (req, res) => {
   try {
     const { stock_tx_id } = req.body;
     if (!stock_tx_id) {
