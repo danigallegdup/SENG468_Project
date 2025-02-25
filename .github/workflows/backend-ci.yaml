@@ -30,7 +30,7 @@ jobs:
       run: sudo apt-get install -y jmeter
 
     - name: Run sample_test_script2
-      run: jmeter -n -t ./Sample_test_script.jmx -l results.log -e -o ./results/
+      run: jmeter -n -t ./Sample_test_script2.jmx -l results.log
     
     - name: Archive results.log file and upload to GitHub
       uses: actions/upload-artifact@v4
