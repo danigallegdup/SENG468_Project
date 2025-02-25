@@ -7,7 +7,7 @@ const axios = require('axios');
 const connectDB = require('./db');
 const Order = require('./Order');
 
-const authMiddleware = require('./authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const app = express();
 app.use(cors());
