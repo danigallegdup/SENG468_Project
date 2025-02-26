@@ -18,6 +18,8 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - backend-network
 
@@ -48,3 +50,6 @@ services:
 networks:
   backend-network:
     driver: bridge
+
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
