@@ -1,0 +1,52 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+
+    - name: Create .env file
+      run: |
+        echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+    - name: Run docker compose
+      run: docker-compose -f docker-compose.yml up --build -d
+
+    - name: Run JMeter Tests
+      uses: QAInsights/PerfAction@v3.1
+      with:
+        test-plan-path: Sample_test_script2.jmx
+        args: ''
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: jmeter-results
+        path: result.jtl
+
+    - name: Analyze Results with Latency Lingo
+      uses: latency-lingo/github-action@v0.0.2
+      with:
+        api-key: ${{ secrets.LATENCY_LINGO_API_KEY }}
+        file: result.jtl
+        label: Checkout Flow Automated Test Plan
+        format: jmeter
+    
+    - name: Stop docker compose
+      run: docker-compose -f docker-compose.yml down
