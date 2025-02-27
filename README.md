@@ -9,7 +9,9 @@ docker-compose up --build
 ## How to Test
 
 ```sh
-jmeter -n -t ./Sample_test_script.jmx -l results.log -e -o ./results/
+jmeter -n -t ./Sample_test_script.jmx -l results1.log -e -o ./sample_results1/
+
+jmeter -n -t ./Sample_test_script2.jmx -l results2.log -e -o ./sample_results2/
 ```
 
 ## File Structure
