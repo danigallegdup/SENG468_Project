@@ -37,11 +37,11 @@ jobs:
     - name: Docker network ls
       run: docker network ls
 
+    - name: Connect api-gateway
+      run: docker network connect bridge api-gateway
+
     - name: check bridge
       run: docker network inspect bridge
-
-    - name: Connect api-gateway
-      run: docker network connect seng468_project_backend-network api-gateway
 
     - name: Run JMeter Tests
       uses: QAInsights/PerfAction@v3.1
