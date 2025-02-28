@@ -60,7 +60,7 @@ services:
       - backend-network
     depends_on:
       - api-gateway
-    entrypoint: ["/bin/sh", "-c", "jmeter -n -t ./Sample_test_script2.jmx -l /tests/result.jtl"]
+    entrypoint: ["jmeter -n -t ./Sample_test_script2.jmx -l /tests/result.jtl"]
 
 
 networks:
