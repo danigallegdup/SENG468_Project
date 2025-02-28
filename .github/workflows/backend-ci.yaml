@@ -33,6 +33,9 @@ jobs:
     
     - name: Check API Gateway logs
       run: docker logs api-gateway
+    
+    - name: check port
+      run: docker network inspect bridge
 
 
     - name: Run JMeter Tests
