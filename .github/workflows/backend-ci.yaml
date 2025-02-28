@@ -34,8 +34,11 @@ jobs:
     - name: Check API Gateway logs
       run: docker logs api-gateway
     
-    - name: check port
-      run: docker network inspect backend-network
+    - name: Docker network ls
+      run: docker network ls
+
+    - name: check bridge
+      run: docker network inspect bridge
 
     - name: Connect api-gateway
       run: docker network connect bridge api-gateway
