@@ -32,7 +32,7 @@ jobs:
       uses: QAInsights/PerfAction@v3.1
       with:
         test-plan-path: Sample_test_script2.jmx
-        args: ''
+        args: "-JBASE_URL=host.docker.internal"
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
