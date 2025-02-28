@@ -25,25 +25,28 @@ jobs:
         echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
         echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
-    - name: Run docker-compose
-      run: docker-compose up --build -d
+    - name: Run docker compose
+      run: docker-compose -f docker-compose.yml up --build -d
 
-    - name: Run JMeter Tests Inside Docker
-      run: docker logs -f jmeter || true  # Get JMeter logs
+    - name: Run JMeter Tests
+      uses: QAInsights/PerfAction@v3.1
+      with:
+        test-plan-path: Sample_test_script2.jmx
+        args: "-JBASE_URL=host.docker.internal"
 
-    - name: Upload JMeter Results
+    - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
         name: jmeter-results
-        path: tests/result.jtl
+        path: result.jtl
 
     - name: Analyze Results with Latency Lingo
       uses: latency-lingo/github-action@v0.0.2
       with:
         api-key: ${{ secrets.LATENCY_LINGO_API_KEY }}
-        file: tests/result.jtl
+        file: result.jtl
         label: Checkout Flow Automated Test Plan
         format: jmeter
-
-    - name: Stop docker-compose
-      run: docker-compose down
+    
+    - name: Stop docker compose
+      run: docker-compose -f docker-compose.yml down

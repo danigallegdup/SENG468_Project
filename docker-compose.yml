@@ -50,19 +50,7 @@ services:
       - order-service
     networks:
       - backend-network
-    
-  jmeter:
-    image: justb4/jmeter
-    container_name: jmeter
-    volumes:
-      - ./tests:/tests  # Mount test scripts
-    networks:
-      - backend-network
-    depends_on:
-      - api-gateway
-    entrypoint: ["jmeter -n -t ./Sample_test_script2.jmx -l /tests/result.jtl"]
-
-
+      
 networks:
   backend-network:
     driver: bridge

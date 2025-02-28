@@ -6,7 +6,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="BASE_URL" elementType="Argument">
             <stringProp name="Argument.name">BASE_URL</stringProp>
-            <stringProp name="Argument.value">api-gateway</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
