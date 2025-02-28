@@ -27,6 +27,13 @@ jobs:
 
     - name: Run docker compose
       run: docker-compose -f docker-compose.yml up --build -d
+    
+    - name: Check running containers
+      run: docker ps -a
+    
+    - name: Check API Gateway logs
+      run: docker logs api-gateway
+
 
     - name: Run JMeter Tests
       uses: QAInsights/PerfAction@v3.1
