@@ -56,12 +56,46 @@ jobs:
         path: result.jtl
 
     - name: Analyze Results with Latency Lingo
+      id: latency-lingo
       uses: latency-lingo/github-action@v0.0.2
       with:
         api-key: ${{ secrets.LATENCY_LINGO_API_KEY }}
         file: result.jtl
         label: Checkout Flow Automated Test Plan
         format: jmeter
+      continue-on-error: true
+
+    - name: Capture Latency Lingo Report URL
+      id: capture-url
+      run: |
+        REPORT_URL=$(grep 'Report can be found at' output.log | awk '{print $8}')
+        echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
+
+    - name: Fail pipeline if there are any tests Fail
+      run: |
+        if [ -f "result.jtl" ]; then
+          if grep -q "false" result.jtl; then
+            echo "Tests failed"
+            exit 1
+          else
+            echo "Tests passed"
+          fi
+        else
+          echo "No test results found"
+          exit 1
+        fi
     
+    - name: Post the Lingo link to PR as a comment
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data } = await octokit.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `Latency Lingo Report: ${process.env.REPORT_URL}`
+          })
+
     - name: Stop docker compose
       run: docker-compose -f docker-compose.yml down
