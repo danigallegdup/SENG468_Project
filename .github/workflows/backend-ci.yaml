@@ -27,12 +27,27 @@ jobs:
 
     - name: Run docker compose
       run: docker-compose -f docker-compose.yml up --build -d
+    
+    - name: Check running containers
+      run: docker ps -a
+    
+    - name: Check API Gateway logs
+      run: docker logs api-gateway
+    
+    - name: Docker network ls
+      run: docker network ls
+
+    - name: Connect api-gateway
+      run: docker network connect bridge api-gateway
+
+    - name: check bridge
+      run: docker network inspect bridge
 
     - name: Run JMeter Tests
       uses: QAInsights/PerfAction@v3.1
       with:
         test-plan-path: Sample_test_script2.jmx
-        args: ''
+        args: "-JBASE_URL=host.docker.internal"
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
