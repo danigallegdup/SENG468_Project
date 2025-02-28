@@ -35,8 +35,10 @@ jobs:
       run: docker logs api-gateway
     
     - name: check port
-      run: docker network inspect bridge
+      run: docker network inspect backend-network
 
+    - name: Connect api-gateway
+      run: docker network connect bridge api-gateway
 
     - name: Run JMeter Tests
       uses: QAInsights/PerfAction@v3.1
