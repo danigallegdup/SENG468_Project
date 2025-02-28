@@ -70,20 +70,6 @@ jobs:
       run: |
         REPORT_URL=$(grep 'Report can be found at' output.log | awk '{print $8}')
         echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
-
-    - name: Fail pipeline if there are any tests Fail
-      run: |
-        if [ -f "result.jtl" ]; then
-          if grep -q "false" result.jtl; then
-            echo "Tests failed"
-            exit 1
-          else
-            echo "Tests passed"
-          fi
-        else
-          echo "No test results found"
-          exit 1
-        fi
     
     - name: Post the Lingo link to PR as a comment
       uses: actions/github-script@v3
@@ -99,3 +85,18 @@ jobs:
 
     - name: Stop docker compose
       run: docker-compose -f docker-compose.yml down
+    
+
+    - name: Fail pipeline if there are any tests Fail
+      run: |
+        if [ -f "result.jtl" ]; then
+          if grep -q "false" result.jtl; then
+            echo "Tests failed"
+            exit 1
+          else
+            echo "Tests passed"
+          fi
+        else
+          echo "No test results found"
+          exit 1
+        fi
