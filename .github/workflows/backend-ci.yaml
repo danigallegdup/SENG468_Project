@@ -76,17 +76,17 @@ jobs:
       with:
         github-token: ${{ secrets.GH_TOKEN }}
         script: |
-          const { data } = await octokit.rest.issues.createComment({
+          const reportUrl = process.env.REPORT_URL;
+          const { data } = await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: `Latency Lingo Report: ${process.env.REPORT_URL}`
+            body: `Latency Lingo Report: ${reportUrl}`
           })
 
     - name: Stop docker compose
       run: docker-compose -f docker-compose.yml down
     
-
     - name: Fail pipeline if there are any tests Fail
       run: |
         if [ -f "result.jtl" ]; then
