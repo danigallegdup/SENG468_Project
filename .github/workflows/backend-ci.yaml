@@ -69,7 +69,7 @@ jobs:
       id: capture-url
       run: |
         REPORT_URL=$(grep 'Report can be found at' output.log | awk '{print $8}')
-        echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
+        echo "REPORT_URL=$REPORT_URL" >> .env
     
     - name: Check PR Changes
       id: pr-changes
@@ -80,7 +80,7 @@ jobs:
       run: |
         # Use GitHub API to create a comment on the PR
         PR_NUMBER=${{ github.event.pull_request.number }}
-        REPORT_URL=${{ process.env.REPORT_URL }}
+        REPORT_URL=${{ steps.capture-url.outputs.REPORT_URL }}
         COMMENT="Check the test report at $REPORT_URL;"
         GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
         COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
