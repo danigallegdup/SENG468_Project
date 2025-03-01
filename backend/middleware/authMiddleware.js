@@ -1,6 +1,7 @@
 // middleware/authMiddleware.js
 // Protects routes with authentication
 
+console.log('Module paths:', module.paths);
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
