@@ -1,5 +1,10 @@
 # Transaction Services Container
 
+
+need to do:
+1. Gateway
+2. authentificatin through middleware
+
 ## Basic Test
 
 curl.exe http://localhost:5000

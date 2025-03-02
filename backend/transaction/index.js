@@ -20,8 +20,6 @@
  * - **Scalability:** Designed for easy expansion with new transaction types or financial services.
  */
 
-
-
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -30,40 +28,50 @@ dotenv.config(); // Load environment variables
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://mongo_db:27017/transactionDB";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/transactionDB"; // Fallback to localhost
 
 // Connect to MongoDB
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => console.log("Transaction-Service/index.js: ✅ MongoDB Connected Successfully"))
-  .catch((err) => console.error("Transaction-Service/index.js: ❌ MongoDB Connection Error:", err));
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err);
+    process.exit(1); // Exit on failure to prevent silent errors
+  });
 
 app.use(express.json()); // Middleware to parse JSON requests
 
-// Import Controllers & Models (No Routes, Calls Controllers Directly)
+// Import Controllers & Models
 const { getWalletTransactions } = require("./controllers/walletController");
 const { getStockTransactions } = require("./controllers/stockController");
 
 require("./models/WalletTransaction"); // Ensure models are loaded
 require("./models/StockTransaction");
 
-// Fetch Wallet Transactions (Calls Controller Directly)
+// Fetch Wallet Transactions
 app.get("/api/walletTransactions", async (req, res) => {
-  await getWalletTransactions(req, res);
+  try {
+    await getWalletTransactions(req, res);
+  } catch (error) {
+    console.error("Transaction-Service/index.js: Error fetching wallet transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-// Fetch Stock Transactions (Calls Controller Directly)
+// Fetch Stock Transactions
 app.get("/api/stockTransactions", async (req, res) => {
-  await getStockTransactions(req, res);
+  try {
+    await getStockTransactions(req, res);
+  } catch (error) {
+    console.error("Transaction-Service/index.js: Error fetching stock transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // Health Check
 app.get("/", (req, res) => {
-  res.send("Transaction-Service/index.js: 🚀 Transaction Service is running...");
+  res.send("🚀Transaction-Service/index.js:  Transaction Service is running...");
 });
 
 // Start Server
 app.listen(PORT, () => console.log(`Transaction-Service/index.js: ✅ Server running on port ${PORT}`));
-
-
-
