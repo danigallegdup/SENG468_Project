@@ -41,7 +41,7 @@ services:
           context: ./backend/transaction
       container_name: transaction
       ports:
-        - "5000:5000"
+        - "3004:3004"
       environment:
         - NODE_ENV=development
         - MONGO_URI=${MONGO_URI}
