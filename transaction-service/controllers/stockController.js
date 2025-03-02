@@ -28,7 +28,7 @@ exports.getStockTransactions = async (req, res) => {
 
     if (!transactions.length) {
       console.log("controllers/stockTransactionController.js: No stock transactions found.");
-      return res.status(200).json({ success: true, message: "No transactions available.", data: [] });
+      return res.status(200).json({ success: true, message: "No stock transactions available.", data: [] });
     }
 
     console.log("controllers/stockTransactionController.js: Stock transactions retrieved successfully.");

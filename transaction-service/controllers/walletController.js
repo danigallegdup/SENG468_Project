@@ -28,7 +28,7 @@ exports.getWalletTransactions = async (req, res) => {
 
     if (!transactions.length) {
       console.log("controllers/walletController.js: No wallet transactions found.");
-      return res.status(200).json({ success: true, message: "No transactions available.", data: [] });
+      return res.status(200).json({ success: true, message: "No wallet transactions available.", data: [] });
     }
 
     console.log("controllers/walletController.js: Wallet transactions retrieved successfully.");
