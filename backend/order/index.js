@@ -105,7 +105,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
         // (a) Update wallet
         // Point this to your actual Wallet service endpoint
         await axios.post(
-          `http://localhost:5002/transaction/updateWallet`,
+          `http://localhost:8080/transaction/updateWallet`,
           {
             amount: completedOrder.stock_price * completedOrder.quantity,
             order_status: completedOrder.order_status,
@@ -123,7 +123,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
         // (b) Update stock portfolio
         // Point this to your actual Stock/Portfolio service endpoint
         await axios.post(
-          `http://localhost:5003/transaction/UpdateStockPortfolio`,
+          `http://localhost:8080/transaction/UpdateStockPortfolio`,
           {
             user_id: completedOrder.user_id,
             stock_id: completedOrder.stock_id,
