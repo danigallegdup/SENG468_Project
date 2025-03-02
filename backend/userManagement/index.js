@@ -24,7 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Health-check route
 app.get('/', (req, res) => {
-  res.send('✅ Stock Management Service is running!');
+  res.send('✅ User Management Service is running!');
 });
 
 /**
@@ -168,5 +168,5 @@ app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
 // Start server
 const PORT = process.env.USERMANAGEMENT_SERVICE_PORT || 3003;
 app.listen(PORT, () => {
-  console.log(`🚀 Stock Management Service running on port ${PORT}`);
+  console.log(`🚀 User Management Service running on port ${PORT}`);
 });
