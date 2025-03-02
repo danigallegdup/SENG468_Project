@@ -7,8 +7,8 @@
  *   - Uses Express.js to handle HTTP requests.
  *   - Connects to MongoDB using Mongoose.
  * - API Endpoints: 
- *   - Fetches wallet transactions (`/walletTransactions`).
- *   - Fetches stock transactions (`/stockTransactions`).
+ *   - Fetches wallet transactions (`/api/walletTransactions`).
+ *   - Fetches stock transactions (`/api/stockTransactions`).
  * - Modular Design:
  *   - **Controllers:** (`walletController.js`, `stockController.js`) handle business logic.
  *   - **Models:** (`WalletTransaction.js`, `StockTransaction.js`) define database schemas.

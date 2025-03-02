@@ -1,5 +1,13 @@
 # Transaction Services Container
 
+curl.exe -X GET http://localhost:8080//authentication/
+
+
+curl.exe -X POST http://localhost:8080/authentication/register \
+     -H "Content-Type: application/json" \
+     -d '{"user_name": "testuser", "password": "Test@123", "name": "Test User"}'
+
+
 
 need to do:
 1. Gateway
