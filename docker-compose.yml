@@ -84,6 +84,7 @@ services:
       - "8080:8080"  # API Gateway is exposed on port 8080
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/middleware:/backend/middleware
     depends_on:
       - auth-service
       - order-service
