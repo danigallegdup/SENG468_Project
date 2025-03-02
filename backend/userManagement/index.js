@@ -56,21 +56,6 @@ app.post('/createStock', authMiddleware, async (req, res) => {
 
 /**
  * ----------------------------------------------------------------
- * GET /getStockPortfolio
- * Retrieve user's stock portfolio
- * ----------------------------------------------------------------
- */
-app.get('/getStockPortfolio', authMiddleware, async (req, res) => {
-  try {
-    const stocks = await UserHeldStock.find({ user_id: req.user.id });
-    res.json({ success: true, data: stocks });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-/**
- * ----------------------------------------------------------------
  * POST /addStockToUser
  * Add a quantity of a stock to the user
  * ----------------------------------------------------------------
