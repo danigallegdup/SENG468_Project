@@ -1,18 +1,18 @@
 version: "3.9"
 
 services:
-  # clean-mongo:
-  #   build:
-  #     context: ./backend/config
-  #   container_name: clean-mongo
-  #   ports:
-  #     - "3005:3005"
-  #   environment:
-  #     - NODE_ENV=development
-  #     - MONGO_URI=${MONGO_URI}
-  #     - JWT_SECRET=${JWT_SECRET}
-  #   networks:
-  #     - backend-network
+  clean-mongo:
+    build:
+      context: ./backend/config
+    container_name: clean-mongo
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
 
   front-end:
     build:
@@ -59,6 +59,21 @@ services:
       - ./backend/middleware:/backend/middleware
     ports:
       - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+
+  usermanagement-service:
+    build:
+      context: ./backend/userManagement
+    container_name: usermanagement-service
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "3003:3003"
     environment:
       - NODE_ENV=development
       - MONGO_URI=${MONGO_URI}
