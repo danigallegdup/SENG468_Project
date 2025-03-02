@@ -87,6 +87,8 @@ services:
     depends_on:
       - auth-service
       - order-service
+      - usermanagement-service
+      - transaction-service
     networks:
       - backend-network
 
