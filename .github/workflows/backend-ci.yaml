@@ -82,7 +82,7 @@ jobs:
         # Use GitHub API to create a comment on the PR
         PR_NUMBER=${{ github.event.pull_request.number }}
         REPORT_URL=${{ steps.capture-url.outputs.report_url }}
-        COMMENT="Check the test report at $REPORT_URL;"
+        COMMENT="Check the test report at $REPORT_URL;\n [Download result.jtl artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts) to view the test results."
         GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
         COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
 
