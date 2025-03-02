@@ -62,6 +62,21 @@ services:
     networks:
       - backend-network
 
+  usermanagement-service:
+    build:
+      context: ./backend/userManagement
+    container_name: usermanagement-service
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+
   api-gateway:
     image: nginx:latest
     container_name: api-gateway
