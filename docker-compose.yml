@@ -36,6 +36,17 @@ services:
     networks:
       - backend-network
 
+  transaction-service:
+      build:
+          context: ./backend/transaction
+      container_name: transaction
+      ports:
+        - "5000:5000"
+      environment:
+        - NODE_ENV=development
+        - MONGO_URI=${MONGO_URI}
+        - JWT_SECRET=${JWT_SECRET}
+
   order-service:
     build:
       context: ./backend/order
