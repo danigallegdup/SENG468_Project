@@ -7,7 +7,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const Stock = require('./Stock');
 const UserHeldStock = require('./UserHeldStock');
+const Wallet = require('./Wallet');
+const WalletTransaction = require('./WalletTransaction');
 const authMiddleware = require('../middleware/authMiddleware');
+
 
 const app = express();
 app.use(cors());
