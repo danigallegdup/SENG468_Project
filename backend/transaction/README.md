@@ -1,6 +1,4 @@
 # Transaction Services Container
-note: Need to fix expects the .env file to be on the same directory as 
-
 
 ## Basic Test
 

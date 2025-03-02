@@ -3,12 +3,14 @@ version: "3.9"
 services:
   transaction-service:
     build:
-        context: ./transaction-service
-    container_name: transaction-service
+        context: ./backend/transaction
+    container_name: transaction
     ports:
       - "5000:5000"
     environment:
       - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
 
   front-end:
     build:
