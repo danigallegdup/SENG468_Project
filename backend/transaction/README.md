@@ -5,6 +5,14 @@ need to do:
 1. Gateway
 2. authentificatin through middleware
 
+ curl.exe -X GET http://localhost:8080/transaction/ 
+
+ curl.exe -X GET http://localhost:8080/transaction/walletTransactions
+
+curl.exe -X GET http://localhost:8080/transaction/api/walletTransactions 
+
+curl.exe -X GET http://localhost:8080/transaction/api/stockTransactions
+
 ## Basic Test
 
 curl.exe http://localhost:5000

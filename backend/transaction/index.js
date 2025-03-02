@@ -1,5 +1,5 @@
 /**
- * Transaction-Service/index.js
+ * backened/transaction/index.js
  * 
  * - Entry Point: Initializes the Transaction Service.
  * - Purpose: Manages financial transactions related to wallets and stocks.
@@ -7,8 +7,8 @@
  *   - Uses Express.js to handle HTTP requests.
  *   - Connects to MongoDB using Mongoose.
  * - API Endpoints: 
- *   - Fetches wallet transactions (`/api/walletTransactions`).
- *   - Fetches stock transactions (`/api/stockTransactions`).
+ *   - Fetches wallet transactions (`/walletTransactions`).
+ *   - Fetches stock transactions (`/stockTransactions`).
  * - Modular Design:
  *   - **Controllers:** (`walletController.js`, `stockController.js`) handle business logic.
  *   - **Models:** (`WalletTransaction.js`, `StockTransaction.js`) define database schemas.
@@ -49,7 +49,7 @@ require("./models/WalletTransaction"); // Ensure models are loaded
 require("./models/StockTransaction");
 
 // Fetch Wallet Transactions
-app.get("/api/walletTransactions", async (req, res) => {
+app.get("/walletTransactions", async (req, res) => {
   try {
     await getWalletTransactions(req, res);
   } catch (error) {
@@ -59,7 +59,7 @@ app.get("/api/walletTransactions", async (req, res) => {
 });
 
 // Fetch Stock Transactions
-app.get("/api/stockTransactions", async (req, res) => {
+app.get("/stockTransactions", async (req, res) => {
   try {
     await getStockTransactions(req, res);
   } catch (error) {
