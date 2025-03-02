@@ -17,19 +17,17 @@ need to do:
 
  curl.exe -X GET http://localhost:8080/transaction/walletTransactions
 
-curl.exe -X GET http://localhost:8080/transaction/api/walletTransactions 
-
-curl.exe -X GET http://localhost:8080/transaction/api/stockTransactions
+ curl.exe -X GET http://localhost:8080/transaction/stockTransactions
 
 ## Basic Test
 
 curl.exe http://localhost:5000
 🚀 Transaction Service is running...
 
-curl.exe http://localhost:5000/api/walletTransactions
+curl.exe http://localhost:5000/walletTransactions
 {"success":true,"message":"No wallet transactions available.","data":[]}
 
-curl.exe http://localhost:5000/api/stockTransactions
+curl.exe http://localhost:5000/stockTransactions
 {"success":true,"message":"No stock transactions available.","data":[]}
 []
 
