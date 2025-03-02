@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken"); // ✅ Import `jsonwebtoken` here instead o
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3004;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/transactionDB";
 
 // Connect to MongoDB

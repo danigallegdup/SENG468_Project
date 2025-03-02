@@ -21,13 +21,13 @@ need to do:
 
 ## Basic Test
 
-curl.exe http://localhost:5000
+curl.exe http://localhost:3004
 🚀 Transaction Service is running...
 
-curl.exe http://localhost:5000/walletTransactions
+curl.exe http://localhost:3004/walletTransactions
 {"success":true,"message":"No wallet transactions available.","data":[]}
 
-curl.exe http://localhost:5000/stockTransactions
+curl.exe http://localhost:3004/stockTransactions
 {"success":true,"message":"No stock transactions available.","data":[]}
 []
 
