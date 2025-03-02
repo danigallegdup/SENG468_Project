@@ -11,7 +11,7 @@
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
             <stringProp name="Argument.name">BASE_PORT</stringProp>
-            <stringProp name="Argument.value">5001</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="register" elementType="Argument">
@@ -180,6 +180,17 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="400 Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="51508">400</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">true</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.scope">all</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="3 Failed Login Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
@@ -221,6 +232,17 @@
             <boolProp name="INVERT">false</boolProp>
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="400 Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="51508">400</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">true</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.scope">all</stringProp>
+          </ResponseAssertion>
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="4 Login Request" enabled="true">
@@ -564,7 +586,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="10 Place Stock Order Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="10 Place Stock Order Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${placeStockOrder}</stringProp>
@@ -584,6 +606,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -607,7 +633,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="11 Place Stock Order Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="11 Place Stock Order Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${placeStockOrder}</stringProp>
@@ -627,7 +653,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -640,7 +670,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -650,7 +680,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="12 Get Stock Portfolio Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="12 Get Stock Portfolio Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${getStockPortfolio}</stringProp>
@@ -680,7 +710,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -689,7 +719,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data</stringProp>
             <stringProp name="EXPECTED_VALUE">[]</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -712,6 +742,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -725,7 +759,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -734,7 +768,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].parent_stock_tx_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].parent_stock_tx_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].parent_stock_tx_id</stringProp>
             <stringProp name="EXPECTED_VALUE">null</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -743,7 +777,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].wallet_tx_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].wallet_tx_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].wallet_tx_id</stringProp>
             <stringProp name="EXPECTED_VALUE">null</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -761,7 +795,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_status JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_status JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].order_status</stringProp>
             <stringProp name="EXPECTED_VALUE">IN_PROGRESS</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -770,7 +804,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_buy JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_buy JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].is_buy</stringProp>
             <stringProp name="EXPECTED_VALUE">false</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -886,13 +920,13 @@
           </JSONPostProcessor>
           <hashTree/>
         </hashTree>
-        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler">
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="true">
           <boolProp name="displayJMeterProperties">false</boolProp>
           <boolProp name="displayJMeterVariables">true</boolProp>
           <boolProp name="displaySystemProperties">false</boolProp>
         </DebugSampler>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="14 Register Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="14 Register Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${register}</stringProp>
@@ -911,6 +945,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -992,6 +1030,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -1069,7 +1111,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="17 Add Money Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="17 Add Money Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${addMoneyToWallet}</stringProp>
@@ -1088,7 +1130,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -1101,7 +1147,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1111,7 +1157,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="18 Get Wallet Balance Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="18 Get Wallet Balance Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${getWalletBalance}</stringProp>
@@ -1150,7 +1196,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data.balance JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data.balance JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data.balance</stringProp>
             <stringProp name="EXPECTED_VALUE">10000</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1160,7 +1206,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="19 Place Stock Order Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="19 Place Stock Order Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${placeStockOrder}</stringProp>
@@ -1179,7 +1225,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -1192,7 +1242,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1202,7 +1252,7 @@
           </JSONPathAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="20 Get Stock Transactions Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="20 Get Stock Transactions Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${getStockTransactions}</stringProp>
@@ -1241,7 +1291,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].parent_stock_tx_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].parent_stock_tx_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].parent_stock_tx_id</stringProp>
             <stringProp name="EXPECTED_VALUE">null</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1250,7 +1300,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].stock_id</stringProp>
             <stringProp name="EXPECTED_VALUE">${googleStockId}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1259,7 +1309,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_status JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_status JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].order_status</stringProp>
             <stringProp name="EXPECTED_VALUE">COMPLETED</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1268,7 +1318,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_buy JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_buy JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].is_buy</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1277,7 +1327,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_type JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].order_type JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].order_type</stringProp>
             <stringProp name="EXPECTED_VALUE">MARKET</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1286,7 +1336,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_price JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_price JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].stock_price</stringProp>
             <stringProp name="EXPECTED_VALUE">135</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1295,7 +1345,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].quantity JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].quantity JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].quantity</stringProp>
             <stringProp name="EXPECTED_VALUE">10</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1304,14 +1354,14 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="googleStockTxId Extractor">
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="googleStockTxId Extractor" enabled="true">
             <stringProp name="JSONPostProcessor.referenceNames">googleUserStockTxId</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data[0].stock_tx_id</stringProp>
             <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
             <stringProp name="Sample.scope">all</stringProp>
           </JSONPostProcessor>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="googleWalletTxId Extractor">
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="googleWalletTxId Extractor" enabled="true">
             <stringProp name="JSONPostProcessor.referenceNames">googleUserWalletTxId</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data[0].wallet_tx_id</stringProp>
             <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
@@ -1319,7 +1369,7 @@
           </JSONPostProcessor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="21 Get Wallet Transactions Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="21 Get Wallet Transactions Request" enabled="true">
           <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
           <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
           <stringProp name="HTTPSampler.path">${getWalletTransactions}</stringProp>
@@ -1332,7 +1382,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -1345,7 +1399,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1354,7 +1408,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].wallet_tx_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].wallet_tx_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].wallet_tx_id</stringProp>
             <stringProp name="EXPECTED_VALUE">${googleUserWalletTxId}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1363,7 +1417,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_tx_id JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].stock_tx_id JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].stock_tx_id</stringProp>
             <stringProp name="EXPECTED_VALUE">${googleUserStockTxId}</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1372,7 +1426,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_debit JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].is_debit JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].is_debit</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1381,7 +1435,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].amount JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data[0].amount JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data[0].amount</stringProp>
             <stringProp name="EXPECTED_VALUE">1350</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1404,6 +1458,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -1417,7 +1475,7 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.success</stringProp>
             <stringProp name="EXPECTED_VALUE">true</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1426,7 +1484,7 @@
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
           <hashTree/>
-          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data.balance JSON Assertion">
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="data.balance JSON Assertion" enabled="true">
             <stringProp name="JSON_PATH">$.data.balance</stringProp>
             <stringProp name="EXPECTED_VALUE">8650</stringProp>
             <boolProp name="JSONVALIDATION">true</boolProp>
@@ -1449,6 +1507,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -1524,7 +1586,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -1532,7 +1598,7 @@
               </elementProp>
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${user1Token}</stringProp>
+                <stringProp name="Header.value">${compToken}</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
@@ -1560,6 +1626,10 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Comp HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -1588,12 +1658,185 @@
             <boolProp name="JSONVALIDATION">true</boolProp>
             <boolProp name="EXPECT_NULL">false</boolProp>
             <boolProp name="INVERT">false</boolProp>
+            <boolProp name="ISREGEX">false</boolProp>
+          </JSONPathAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="26 Invalid Token" enabled="true">
+          <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
+          <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
+          <stringProp name="HTTPSampler.path">${getStockPortfolio}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Invalid HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${invalidToken}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="401 Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="51509">401</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">true</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.scope">all</stringProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="27 Invalid Payload Example" enabled="true">
+          <stringProp name="HTTPSampler.domain">${BASE_URL}</stringProp>
+          <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
+          <stringProp name="HTTPSampler.path">${addMoneyToWallet}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;amount&quot;:-10000}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${user1Token}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="success JSON Assertion" enabled="true">
+            <stringProp name="JSON_PATH">$.success</stringProp>
+            <stringProp name="EXPECTED_VALUE">false</stringProp>
+            <boolProp name="JSONVALIDATION">true</boolProp>
+            <boolProp name="EXPECT_NULL">false</boolProp>
+            <boolProp name="INVERT">false</boolProp>
             <boolProp name="ISREGEX">true</boolProp>
           </JSONPathAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="400 Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="51508">400</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">true</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+            <stringProp name="Assertion.scope">all</stringProp>
+          </ResponseAssertion>
           <hashTree/>
         </hashTree>
       </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

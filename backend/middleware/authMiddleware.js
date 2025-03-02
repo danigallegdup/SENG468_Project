@@ -13,6 +13,7 @@ module.exports = (req, res, next) => {
         return res.status(400).json({ success: false, message: 'Access Denied: No Token Provided' });
     }
 
+    
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded Token:", decoded); // ✅ Check if token is valid
