@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  transaction-service:
+    build:
+        context: ./transaction-service
+    container_name: transaction-service
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+
   front-end:
     build:
       context: ./day-trading-app
@@ -22,6 +31,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - backend-network
+
+  
 
   api-gateway:
     image: nginx:latest
