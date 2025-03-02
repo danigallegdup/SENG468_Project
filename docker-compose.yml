@@ -39,13 +39,17 @@ services:
   transaction-service:
       build:
           context: ./backend/transaction
-      container_name: transaction
+      container_name: transaction-service
+      volumes:
+        - ./backend/middleware:/backend/middleware
       ports:
-        - "5000:5000"
+        - "3004:3004"
       environment:
         - NODE_ENV=development
         - MONGO_URI=${MONGO_URI}
         - JWT_SECRET=${JWT_SECRET}
+      networks:
+        - backend-network
 
   order-service:
     build:
@@ -86,6 +90,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - auth-service
+      - transaction-service
       - order-service
     networks:
       - backend-network

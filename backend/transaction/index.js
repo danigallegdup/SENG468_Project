@@ -1,69 +1,82 @@
-/**
- * Transaction-Service/index.js
- * 
- * - Entry Point: Initializes the Transaction Service.
- * - Purpose: Manages financial transactions related to wallets and stocks.
- * - Server Setup:
- *   - Uses Express.js to handle HTTP requests.
- *   - Connects to MongoDB using Mongoose.
- * - API Endpoints: 
- *   - Fetches wallet transactions (`/api/walletTransactions`).
- *   - Fetches stock transactions (`/api/stockTransactions`).
- * - Modular Design:
- *   - **Controllers:** (`walletController.js`, `stockController.js`) handle business logic.
- *   - **Models:** (`WalletTransaction.js`, `StockTransaction.js`) define database schemas.
- *   - **index.js:** Only routes requests and delegates processing.
- * - Additional Features:
- *   - JSON parsing middleware.
- *   - Health check endpoint (`/`).
- *   - Structured error handling for MongoDB connectivity.
- * - **Scalability:** Designed for easy expansion with new transaction types or financial services.
- */
-
-
-
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken"); // ✅ Import `jsonwebtoken` here instead of `authMiddleware.js`
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://mongo_db:27017/transactionDB";
+const PORT = process.env.PORT || 3004;
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/transactionDB";
 
 // Connect to MongoDB
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => console.log("Transaction-Service/index.js: ✅ MongoDB Connected Successfully"))
-  .catch((err) => console.error("Transaction-Service/index.js: ❌ MongoDB Connection Error:", err));
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err);
+    process.exit(1); // Exit on failure to prevent silent errors
+  });
 
 app.use(express.json()); // Middleware to parse JSON requests
 
-// Import Controllers & Models (No Routes, Calls Controllers Directly)
+// ✅ Inline Authentication Middleware (Replaces `authMiddleware.js`)
+const authMiddleware = (req, res, next) => {
+  let token = req.header("Authorization");
+
+  // ✅ Ensure the token is in the correct format (`Authorization: Bearer <token>`)
+  if (token && token.startsWith("Bearer ")) {
+    token = token.split(" ")[1]; // Extract token
+  }
+
+  console.log("Token Received:", token); // Debugging output
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: "Access Denied: No Token Provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded Token:", decoded); // ✅ Debugging token payload
+    req.user = decoded; // Attach user info to request
+    next();
+  } catch (err) {
+    console.error("JWT Verification Failed:", err);
+    res.status(401).json({ success: false, message: "Invalid Token" });
+  }
+};
+
+// Import Controllers & Models
 const { getWalletTransactions } = require("./controllers/walletController");
 const { getStockTransactions } = require("./controllers/stockController");
 
 require("./models/WalletTransaction"); // Ensure models are loaded
 require("./models/StockTransaction");
 
-// Fetch Wallet Transactions (Calls Controller Directly)
-app.get("/api/walletTransactions", async (req, res) => {
-  await getWalletTransactions(req, res);
+// ✅ Secure Wallet Transactions Route
+app.get("/walletTransactions", authMiddleware, async (req, res) => {
+  try {
+    await getWalletTransactions(req, res);
+  } catch (error) {
+    console.error("Transaction-Service/index.js: Error fetching wallet transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-// Fetch Stock Transactions (Calls Controller Directly)
-app.get("/api/stockTransactions", async (req, res) => {
-  await getStockTransactions(req, res);
+// ✅ Secure Stock Transactions Route
+app.get("/stockTransactions", authMiddleware, async (req, res) => {
+  try {
+    await getStockTransactions(req, res);
+  } catch (error) {
+    console.error("Transaction-Service/index.js: Error fetching stock transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // Health Check
 app.get("/", (req, res) => {
-  res.send("Transaction-Service/index.js: 🚀 Transaction Service is running...");
+  res.send("🚀 Transaction-Service/index.js: Transaction Service is running...");
 });
 
 // Start Server
 app.listen(PORT, () => console.log(`Transaction-Service/index.js: ✅ Server running on port ${PORT}`));
-
-
-
