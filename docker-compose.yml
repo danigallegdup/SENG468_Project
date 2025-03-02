@@ -40,6 +40,8 @@ services:
       build:
           context: ./backend/transaction
       container_name: transaction-service
+      volumes:
+        - ./backend/middleware:/backend/middleware
       ports:
         - "5000:5000"
       environment:
