@@ -1,9 +1,21 @@
-// backend/config/redis.js
-// Redis caching configuration
+/*
+redis.js: Responsible for connecting to Redis cache client.
+          Used by the Order Service and Matching Engine.
+*/
+
 
 const redis = require("redis");
-const client = redis.createClient();        // Create Redis client instance
 
-client.on("error", console.error("Redis Error:", err));
+// Redis connection
+const redisClient = redis.createClient({
+  url: "redis://localhost:6379",
+});
 
-module.exports = client;        // Export Redis client for use in other files
+redisClient.on("error", (err) => console.error("❌ Redis Error:", err));
+
+(async () => {
+  await redisClient.connect();
+  console.log("✅ Redis connected");
+})();
+
+module.exports = redisClient;

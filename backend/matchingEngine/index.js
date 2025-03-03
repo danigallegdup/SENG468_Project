@@ -24,24 +24,13 @@ redisClient.connect()
   .then(() => console.log('✅ Connected to Redis'))
   .catch(err => console.error('❌ Redis Connection Error:', err));
 
-// RabbitMQ consumer to process orders asynchronously
-consumeOrder(async (order) => {
-  try {
-    console.log("🔄 Processing Order:", order);
-    const matchResult = await matchOrder(order);
-    
-    if (matchResult.matched) {
-      await redisClient.set(`latest_price:${order.stock_id}`, order.stock_price);
-    }
-  } catch (error) {
-    console.error("❌ Error in order processing:", error);
-  }
-});
+// Start RabbitMQ consumer to process orders asynchronously
+consumeOrders().catch(console.error);
 
 // **GET /getStockPrices** - Retrieve latest stock prices from Redis
 app.get('/getStockPrices', async (req, res) => {
   try {
-    const keys = await redisClient.keys('latest_price:*');
+    const keys = await redisClient.keys('lowest_price:*');
     const prices = {};
 
     for (const key of keys) {

@@ -16,23 +16,6 @@ async function connectRabbitMQ() {
   console.log("✅ RabbitMQ connected");
 }
 
-// Publish order to RabbitMQ queue
-async function publishOrder(order) {
-  if (!channel) await connectRabbitMQ();
-  channel.sendToQueue(queueName, Buffer.from(JSON.stringify(order)), { persistent: true });
-  console.log(`📩 Order Queued: ${order.stock_tx_id}`);
-}
-
-// Consume orders from RabbitMQ queue
-async function consumeOrders(callback) {
-  if (!channel) await connectRabbitMQ();
-  channel.consume(queueName, (msg) => {
-    const order = JSON.parse(msg.content.toString());
-    callback(order);
-    channel.ack(msg); // Acknowledge message processing
-  });
-}
-
 connectRabbitMQ();
 
 module.exports = { publishOrder, consumeOrders };

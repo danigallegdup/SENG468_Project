@@ -164,6 +164,51 @@ app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
     }
 });
 
+/**
+ * ----------------------------------------------------------------
+ * POST /subMoneyFromWallet
+ * Subtract a balance from a wallet
+ * ----------------------------------------------------------------
+ */
+app.post('/subMoneyFromWallet', authMiddleware, async (req, res) => {
+  try {
+      const { amount } = req.body;
+      if (!amount || amount <= 0) {
+          return res.status(400).json({
+              success: false,
+              data: { error: "amount must be a positive number" }
+          });
+      }
+      // Retrieve the current balance from the most recent transaction.
+      const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
+          .sort({ timeStamp: 'desc' })
+          .exec();
+      const currentBalance = lastTransaction ? lastTransaction.balance : 0;
+
+      // Check balance will not be negative
+      if (currentBalance-amount < 0) {
+        return res.status(400).json({
+            success: false,
+            data: { error: "User has insufficient funds" }
+        });
+      
+      }
+      
+      // Update balance
+      const newBalance = currentBalance - amount;
+
+      const newTransaction = new Wallet({
+          userId: req.user.id,
+          balance: newBalance,
+          timeStamp: new Date() // Set the actual timestamp when the transaction is made.
+      });
+      await newTransaction.save();
+      return res.json({ success: true, data: null });
+  } catch (err) {
+      console.error("Error adding money to wallet:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 // Start server
 const PORT = process.env.USERMANAGEMENT_SERVICE_PORT || 3003;

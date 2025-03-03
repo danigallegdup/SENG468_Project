@@ -27,8 +27,16 @@ async function consumeOrders() {
                 const order = JSON.parse(msg.content.toString());
                 console.log(`📥 Received Order:`, order);
 
-                await matchOrder(order); // Process the order matching logic
+                await matchOrder(order); // Match the order
 
+                const response = {
+                    stock_tx_id: order.stock_tx_id,
+                    matched: matchResult.matched,
+                };
+
+                channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });
+                console.log(`📤 Sent order response for ${order.stock_tx_id}: ${response.order_status}`);
+            
                 channel.ack(msg); // Acknowledge message to remove from queue
             }
         }, { noAck: false });
