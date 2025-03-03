@@ -9,7 +9,7 @@ const Order = require('./Order');
 
 const authMiddleware = require('../middleware/authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
-const redisClient = require("../config/redis"); // Import Redis
+const redisClient = require("./redis"); // Import Redis
 
 const app = express();
 app.use(cors());
