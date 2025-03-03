@@ -54,7 +54,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
       is_buy,
       order_type,
       quantity,
-      stock_price: is_buy ? null : price, 
+      stock_price: is_buy ? null : price,
       order_status: 'IN_PROGRESS',
       created_at: new Date(),
       stock_tx_id: `tx_${Date.now()}`,
@@ -103,9 +103,8 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
 
       try {
         // (a) Update wallet
-        // Point this to your actual Wallet service endpoint
         await axios.post(
-          `http://localhost:5002/transaction/updateWallet`,
+          `${req.protocol}://${req.get("host")}/transaction/updateWallet`,
           {
             amount: completedOrder.stock_price * completedOrder.quantity,
             order_status: completedOrder.order_status,
@@ -115,15 +114,14 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
           },
           {
             headers: {
-              token: req.headers.token // forward the token if needed
+              token: req.headers.token, // forward the token if needed
             },
           }
         );
 
         // (b) Update stock portfolio
-        // Point this to your actual Stock/Portfolio service endpoint
         await axios.post(
-          `http://localhost:5003/transaction/UpdateStockPortfolio`,
+          `${req.protocol}://${req.get("host")}/transaction/UpdateStockPortfolio`,
           {
             user_id: completedOrder.user_id,
             stock_id: completedOrder.stock_id,
