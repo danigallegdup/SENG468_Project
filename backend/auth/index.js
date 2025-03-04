@@ -36,7 +36,7 @@ app.post('/register', async (req, res) => {
     const { user_name, password, name } = req.body;
 
     if (!user_name || !password || !name) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         data: { error: 'All fields (user_name, password, name) are required' }
       });
@@ -44,7 +44,7 @@ app.post('/register', async (req, res) => {
 
     const existingUser = await User.findOne({ username: user_name });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         data: { error: 'Username already exists' }
       });
@@ -82,7 +82,7 @@ app.post('/login', async (req, res) => {
     const { user_name, password } = req.body;
 
     if (!user_name || !password) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         data: { error: "Both user_name and password are required" },
       });
@@ -90,7 +90,7 @@ app.post('/login', async (req, res) => {
 
     const user = await User.findOne({ username: user_name });
     if (!user || user.hashed_password !== password) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         data: { error: "Invalid username or password" },
       });
