@@ -3,7 +3,7 @@
  * 
  * - **Purpose:** Handles fetching stock transactions from the database.
  * - **Functionality:**
- *   - Queries the `StockTransaction` model to retrieve all stock transactions.
+ *   - Queries the `Order` model to retrieve all stock transactions.
  *   - Sorts transactions in ascending order by `timeStamp`.
  *   - Returns transactions in JSON format.
  * - **Logging:**
@@ -14,17 +14,20 @@
  *   - Catches database errors.
  *   - Returns a `500` status with an error message if fetching fails.
  * - **Exports:**
- *   - `getStockTransactions`: Called in `index.js` when `/api/stockTransactions` is requested.
+ *   - `getOrders`: Called in `index.js` when `/api/Orders` is requested.
  */
 
 
-const StockTransaction = require("../models/StockTransaction");
+const Order = require("../models/Order");
+const UserHeldStock = require("../models/UserHeldStock");
+const Stock = require("../models/Stock");
+
 
 exports.getStockTransactions = async (req, res) => {
   try {
     console.log("controllers/stockTransactionController.js: Fetching stock transactions...");
 
-    const transactions = await StockTransaction.find().sort({ timeStamp: 1 });
+    const transactions = await Order.find().sort({ timeStamp: 1 });
 
     if (!transactions.length) {
       console.log("controllers/stockTransactionController.js: No stock transactions found.");
@@ -37,5 +40,64 @@ exports.getStockTransactions = async (req, res) => {
   } catch (err) {
     console.error("controllers/stockTransactionController.js: Error fetching stock transactions:", err.message);
     res.status(500).json({ success: false, message: "Server error while fetching stock transactions." });
+  }
+};
+
+exports.updateStockPortfolio = async (req, res) => {
+  try {
+    const {user_id, stock_id, quantity, is_buy} = req.body;
+    console.log("user id: ", user_id);
+    console.log("stock id", stock_id);
+    console.log("quantity", quantity);
+    console.log("is buy", is_buy);
+    let userStock = await UserHeldStock.findOne({ user_id, stock_id });
+    console.log("user stock: ", userStock);
+    const stockName = await Stock
+      .findById(stock_id)
+      .select("stock_name");
+    console.log("stock name: ", stockName);
+    if (!userStock && !is_buy) {
+      console.log("User stock not found");
+      return res
+        .status(404)
+        .json({ success: false, data: { error: "User stock not found" } });
+    } else if (!userStock && is_buy) {
+      console.log("User stock not found, creating new");
+      userStock = new UserHeldStock({
+        user_id: req.user.id,
+        stock_id,
+        stock_name: stockName.stock_name,
+        quantity_owned: 0,
+        updated_at: new Date(),
+      });
+    }
+    if (is_buy) {
+      console.log("buying stock");
+      userStock.quantity_owned = userStock.quantity_owned + quantity;
+    } else {
+      console.log("selling stock");
+      userStock.quantity_owned = userStock.quantity_owned - quantity;
+    }
+    userStock.updated_at = new Date();
+    console.log("user stock: ", userStock);
+    if (userStock.quantity_owned <= 0) {
+      await UserHeldStock.deleteOne({ _id: userStock._id });
+      return res.json({ success: true, data: null });
+    }
+    await userStock.save();
+    return res.json({ success: true, data: null });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, data: { error: "Update stock portfolio failed: "+ err.message } });
+  }
+}
+
+exports.getStockPortfolio = async (req, res) => {
+  try {
+    const stocks = await UserHeldStock.find({ user_id: req.user.id });
+    return res.json({ success: true, data: stocks });
+  } catch (err) {
+    return res.status(500).json({ success: false, data: { error: err.message } });
   }
 };
