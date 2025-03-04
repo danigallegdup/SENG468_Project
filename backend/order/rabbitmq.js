@@ -15,9 +15,9 @@ async function connectRabbitMQ() {
     });
     channel = await connection.createChannel();
     await channel.assertQueue('orderQueue', { durable: true });
-    console.log('✅ matchingEngine: RabbitMQ connected');
+    console.log('✅ orderService: RabbitMQ connected');
   } catch (error) {
-    console.error('❌ matchingEngine: RabbitMQ connection error:', error);
+    console.error('❌ orderService: RabbitMQ connection error:', error);
   }
 }
 

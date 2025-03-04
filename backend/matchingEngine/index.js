@@ -3,22 +3,21 @@ const express = require('express');
 const mongoose = require('mongoose');
 const redis = require('redis');
 const { consumeOrders } = require('./matchingConsumer');
+const connectDB = require('./db');
 const { matchOrder } = require('./matchOrder');
-const rabbitmq = require("../rabbitmq/rabbitmq"); // Import/start RabbitMQ
-const Order = require('../order/Order');
+const {connectRabbitMQ} = require("./rabbitmq"); // Import/start RabbitMQ
 
 const app = express();
 app.use(express.json());
 
+// RabbitMQ connection
+connectRabbitMQ().catch(console.error);
+
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log("✅ Matching Engine connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+connectDB();
 
 // Redis client setup
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
 const redisClient = redis.createClient({ url: REDIS_URL });
 
 redisClient.connect()

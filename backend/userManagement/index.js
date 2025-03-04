@@ -46,6 +46,7 @@ app.post('/createStock', authMiddleware, async (req, res) => {
     }
 
     const newStock = new Stock({ stock_name, current_price: 0 });
+    newStock.stock_id = newStock._id;
     await newStock.save();
 
     res.json({ success: true, data: { stock_id: newStock._id } });
@@ -111,26 +112,6 @@ app.post('/addStockToUser', authMiddleware, async (req, res) => {
 
 /**
  * ----------------------------------------------------------------
- * GET /getWalletBalance
- * Get the balance of a wallet
- * ----------------------------------------------------------------
- */
-app.get('/getWalletBalance', authMiddleware, async (req, res) => {
-    try {
-        // Fetch the latest transaction by sorting with the actual timestamp in descending order.
-        const lastTransaction = await Wallet.findOne({ userId: req.user.id })
-            .sort({ timeStamp: 'desc' })
-            .exec();
-        const balance = lastTransaction ? lastTransaction.balance : 0;
-        return res.json({ success: true, data: { balance } });
-    } catch (err) {
-        console.error("Error fetching wallet balance:", err);
-        return res.status(500).json({ success: false, message: "Server error" });
-    }
-});
-
-/**
- * ----------------------------------------------------------------
  * POST /addMoneyToWallet
  * Add a balance to a wallet
  * ----------------------------------------------------------------
@@ -186,22 +167,21 @@ app.post('/subMoneyFromWallet', authMiddleware, async (req, res) => {
       const currentBalance = lastTransaction ? lastTransaction.balance : 0;
 
       // Check balance will not be negative
-      if (currentBalance-amount < 0) {
+      const newBalance = currentBalance - amount;
+
+      if (newBalance < 0) {
         return res.status(400).json({
             success: false,
             data: { error: "User has insufficient funds" }
         });
-      
       }
-      
-      // Update balance
-      const newBalance = currentBalance - amount;
 
       const newTransaction = new Wallet({
           userId: req.user.id,
           balance: newBalance,
           timeStamp: new Date() // Set the actual timestamp when the transaction is made.
       });
+      
       await newTransaction.save();
       return res.json({ success: true, data: null });
   } catch (err) {

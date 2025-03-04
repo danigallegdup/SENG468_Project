@@ -6,20 +6,26 @@ const cors = require('cors');
 const axios = require('axios');
 const connectDB = require('./db');
 const Order = require('./Order');
+const { v4: uuidv4 } = require("uuid");
 
 const authMiddleware = require('../middleware/authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
-const rabbitmq = require("../rabbitmq/rabbitmq"); // Import/start RabbitMQ
+const { connectRabbitMQ } = require("./rabbitmq"); // Import/start RabbitMQ
+
+const transactionServiceUrl = "http://transaction-service:3004";
+const userManagementServiceUrl = "http://usermanagement-service:3003";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-await connectDB();
-await connectRabbitMQ();
+connectDB();
+connectRabbitMQ();
 
 // Health-check route
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 app.get('/', (req, res) => {
   res.send('✅ Order Management Service is running!');
 });
@@ -34,9 +40,10 @@ app.get('/', (req, res) => {
  * 3) Once matched, calls other microservices to update wallet & stock portfolio
  * ----------------------------------------------------------------
  */
-app.post('/placeStockOrder', authMiddleware, async (req, res) => {
+app.post("/placeStockOrder", authMiddleware, async (req, res) => {
   try {
-    const { stock_id, is_buy, order_type, quantity, price } = req.body;
+    console.log("Order request received for user:", req.user.id);
+    let { stock_id, is_buy, order_type, quantity, price } = req.body;
 
     // Check if required fields are defined
     if (!stock_id || typeof is_buy === 'undefined' || !order_type || !quantity) {
@@ -50,7 +57,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
     if ((is_buy && order_type !== 'MARKET') || (!is_buy && order_type !== 'LIMIT')) {
       return res
         .status(400)
-        .json({ success: false, message: 'BUY must be MARKET, SELL must be LIMIT' });
+        .json({ success: false, message: "Missing required fields" });
     }
 
     // Validate Buy order input
@@ -76,10 +83,9 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
       is_buy,
       order_type,
       quantity,
-      stock_price: is_buy ? null : price, 
-      order_status: 'IN_PROGRESS',
+      stock_price: is_buy ? null : price, // BUY/MARKET has no price
+      order_status: "IN_PROGRESS",
       created_at: new Date(),
-      stock_tx_id: `tx_${Date.now()}`,
       parent_stock_tx_id: null,
       wallet_tx_id: null,
     });
@@ -97,16 +103,14 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
       const totalCost = lowestPrice*quantity;
 
       const walletResponse = await axios.post(
-        `${req.protocol}://${req.get(
-          "host"
-        )}/transaction/subMoneyFromWallet`,
+        `${userManagementServiceUrl}/subMoneyFromWallet`,
         {
           amount: totalCost
         },
         {
           headers: {
-            token: req.headers.token, // Pass the authorization header
-          },
+            token: req.headers.token // Pass the authorization header
+          }
         }
       );
 
@@ -134,7 +138,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
       } else {
         // refund user and return appropriate response
         await axios.post(
-          `${req.protocol}://${req.get("host")}/transaction/addMoneyToWallet`,
+          `${transactionServiceUrl}/addMoneyToWallet`,
           { amount: totalCost },
           { headers: { token: req.headers.token } }
         );
@@ -145,9 +149,7 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
     } else {
       // Attempt to deduct stocks from user's portfolio
       const portfolioResponse = await axios.post(
-        `${req.protocol}://${req.get(
-          "host"
-        )}/transaction/addStockToUser`,
+        `${userManagementServiceUrl}/addStockToUser`,
         {
           user_id: newOrder.user_id,
           stock_id: newOrder.stock_id,
@@ -170,7 +172,9 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
 
       // Add order to Redis sorted set
       redisSellOrdersKey = `sell_orders:${stock_id}`;
-      await redisClient.zadd(redisSellOrdersKey, price, JSON.stringify(newOrder));
+      await redisClient.zAdd(redisSellOrdersKey, [
+        { score: price, value: JSON.stringify(newOrder) }
+      ]);
       console.log(`Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`);
 
       // Update lowest price for stock
@@ -185,8 +189,8 @@ app.post('/placeStockOrder', authMiddleware, async (req, res) => {
     res.json({ success: true, data: newOrder });
 
   } catch (error) {
-    console.error('Error placing order:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error("Error placing order:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
@@ -233,9 +237,7 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
 
     // Return stock to user
     await axios.post(
-      `${req.protocol}://${req.get(
-        "host"
-      )}/transaction/addStockToUser`,
+      `${userManagementServiceUrl}/setup/addStockToUser`,
       {
         stock_id: order.stock_id,
         quantity: order.quantity
@@ -258,7 +260,7 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
     console.error('Error canceling order:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-});*/
+});
 
 const PORT = process.env.ORDER_SERVICE_PORT || 3002;
 app.listen(PORT, () => {

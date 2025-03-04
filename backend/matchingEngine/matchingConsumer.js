@@ -15,7 +15,15 @@ const QUEUE_NAME = 'orders';
  */
 async function consumeOrders() {
     try {
-        const connection = await amqp.connect(RABBITMQ_URL);
+            const connection = await amqp.connect({
+              protocol: 'amqp',
+              hostname: 'rabbitmq',
+              port: 5672,
+              username: 'admin',
+              password: 'admin',
+              vhost: '/'
+            });
+            
         const channel = await connection.createChannel();
 
         await channel.assertQueue(QUEUE_NAME, { durable: true });

@@ -2,78 +2,63 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken"); // ✅ Import `jsonwebtoken` here instead of `authMiddleware.js`
+const cors = require("cors");
+const connectDB = require("./db");
+
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 3004;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/transactionDB";
 
-// Connect to MongoDB
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("Transaction-Service/index.js: ✅ MongoDB Connected Successfully"))
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err);
-    process.exit(1); // Exit on failure to prevent silent errors
-  });
+const authMiddleware = require("../middleware/authMiddleware");
 
-app.use(express.json()); // Middleware to parse JSON requests
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-// ✅ Inline Authentication Middleware (Replaces `authMiddleware.js`)
-const authMiddleware = (req, res, next) => {
-  let token = req.header("Authorization");
-
-  // ✅ Ensure the token is in the correct format (`Authorization: Bearer <token>`)
-  if (token && token.startsWith("Bearer ")) {
-    token = token.split(" ")[1]; // Extract token
-  }
-
-  console.log("Token Received:", token); // Debugging output
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Access Denied: No Token Provided" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded Token:", decoded); // ✅ Debugging token payload
-    req.user = decoded; // Attach user info to request
-    next();
-  } catch (err) {
-    console.error("JWT Verification Failed:", err);
-    res.status(401).json({ success: false, message: "Invalid Token" });
-  }
-};
+connectDB();
 
 // Import Controllers & Models
-const { getWalletTransactions } = require("./controllers/walletController");
-const { getStockTransactions } = require("./controllers/stockController");
+const walletController= require("./controllers/walletController");
+const stockController = require("./controllers/stockController");
 
 require("./models/WalletTransaction"); // Ensure models are loaded
-require("./models/StockTransaction");
+require("./models/Order");
 
 // ✅ Secure Wallet Transactions Route
-app.get("/walletTransactions", authMiddleware, async (req, res) => {
-  try {
-    await getWalletTransactions(req, res);
-  } catch (error) {
-    console.error("Transaction-Service/index.js: Error fetching wallet transactions:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+app.get("/getWalletTransactions", authMiddleware, walletController.getWalletTransactions);
 
 // ✅ Secure Stock Transactions Route
-app.get("/stockTransactions", authMiddleware, async (req, res) => {
-  try {
-    await getStockTransactions(req, res);
-  } catch (error) {
-    console.error("Transaction-Service/index.js: Error fetching stock transactions:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+app.get("/getStockTransactions", authMiddleware, stockController.getStockTransactions);
+
+app.post(
+  "/addMoneyToWallet",
+  authMiddleware,
+  walletController.addMoneyToWallet
+);
+
+app.post("/updateWallet", authMiddleware, walletController.updateWallet);
+app.post("/updateStockPortfolio", authMiddleware, stockController.updateStockPortfolio);
+
+/**
+ * ----------------------------------------------------------------
+ * GET /getWalletBalance
+ * Get the balance of a wallet
+ * ----------------------------------------------------------------
+ */
+app.get('/getWalletBalance', authMiddleware, walletController.getWalletBalance);
+/**
+ * ----------------------------------------------------------------
+ * GET /getStockPortfolio
+ * Retrieve user's stock portfolio
+ * ----------------------------------------------------------------
+ */
+app.get('/getStockPortfolio', authMiddleware, stockController.getStockPortfolio);
+
+app.get("/getStockPrices", authMiddleware, stockController.getStockPrices);
 
 // Health Check
+app.get('/health', (req, res) => res.status(200).send('OK'));
 app.get("/", (req, res) => {
   res.send("🚀 Transaction-Service/index.js: Transaction Service is running...");
 });
