@@ -27,7 +27,9 @@ exports.getStockTransactions = async (req, res) => {
   try {
     console.log("controllers/stockTransactionController.js: Fetching stock transactions...");
 
-    const transactions = await Order.find().sort({ timeStamp: 1 });
+    const transactions = await Order.find({ user_id: req.user.id }).sort({
+      timeStamp: 1,
+    });
 
     if (!transactions.length) {
       console.log("controllers/stockTransactionController.js: No stock transactions found.");
@@ -100,4 +102,38 @@ exports.getStockPortfolio = async (req, res) => {
   } catch (err) {
     return res.status(500).json({ success: false, data: { error: err.message } });
   }
+};
+
+exports.getStockPrices = async (req, res) => {
+      try {  
+          // Fetch all stocks from the 'stocks' collection
+          let stocks = await Stock
+              .find({})
+              .sort({ stock_name: -1 });
+  
+          // Iterate through stocks and fetch the lowest sell order price for each stock
+          for (let i = 0; i < stocks.length; i++) {
+            let stock = stocks[i];
+            console.log("Stock: ", stock);
+              const lowestSellOrder = await Order
+                .find({
+                  stock_id: stock._id.toString(),
+                  is_buy: false,
+                  order_status: "IN_PROGRESS",
+                })
+                .sort({ stock_price: 1 }) // Sort by price ascending
+                .limit(1);
+  
+              // Set the current price from the lowest sell order if available
+              stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].stock_price : null;
+              await stock.save();
+              console.log("Stock after: ", stock);
+              stocks[i] = stock;
+          }
+  
+          res.status(200).json({ success: true, data: stocks });
+      } catch (error) {
+          console.error("Error fetching stock prices:", error);
+          res.status(500).json({ success: false, message: "Internal Server Error" });
+      }
 };

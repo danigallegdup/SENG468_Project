@@ -39,6 +39,14 @@ app.post(
 
 app.post("/updateWallet", authMiddleware, walletController.updateWallet);
 app.post("/updateStockPortfolio", authMiddleware, stockController.updateStockPortfolio);
+
+/**
+ * ----------------------------------------------------------------
+ * GET /getWalletBalance
+ * Get the balance of a wallet
+ * ----------------------------------------------------------------
+ */
+app.get('/getWalletBalance', authMiddleware, walletController.getWalletBalance);
 /**
  * ----------------------------------------------------------------
  * GET /getStockPortfolio
@@ -46,6 +54,8 @@ app.post("/updateStockPortfolio", authMiddleware, stockController.updateStockPor
  * ----------------------------------------------------------------
  */
 app.get('/getStockPortfolio', authMiddleware, stockController.getStockPortfolio);
+
+app.get("/getStockPrices", authMiddleware, stockController.getStockPrices);
 
 // Health Check
 app.get("/", (req, res) => {

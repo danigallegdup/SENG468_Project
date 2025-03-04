@@ -124,3 +124,17 @@ exports.updateWallet = async (req, res) => {
         return res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+exports.getWalletBalance = async (req, res) => {
+  try {
+          // Fetch the latest transaction by sorting with the actual timestamp in descending order.
+          const lastTransaction = await Wallet.findOne({ userId: req.user.id })
+              .sort({ timeStamp: 'desc' })
+              .exec();
+          const balance = lastTransaction ? lastTransaction.balance : 0;
+          return res.json({ success: true, data: { balance } });
+      } catch (err) {
+          console.error("Error fetching wallet balance:", err);
+          return res.status(500).json({ success: false, message: "Server error" });
+      }
+};
