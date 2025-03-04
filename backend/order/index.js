@@ -10,12 +10,14 @@ const Order = require('./Order');
 const authMiddleware = require('../middleware/authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
+const rabbitmq = require("../rabbitmq/rabbitmq"); // Import/start RabbitMQ
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDB();
+await connectDB();
+await connectRabbitMQ();
 
 // Health-check route
 app.get('/', (req, res) => {
@@ -256,4 +258,9 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
     console.error('Error canceling order:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
+});*/
+
+const PORT = process.env.ORDER_SERVICE_PORT || 3002;
+app.listen(PORT, () => {
+  console.log(`🚀 Order Service running on port ${PORT}`);
 });

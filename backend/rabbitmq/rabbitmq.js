@@ -18,4 +18,4 @@ async function connectRabbitMQ() {
 
 connectRabbitMQ();
 
-module.exports = { publishOrder, consumeOrders };
+module.exports = { connectRabbitMQ };

@@ -112,6 +112,21 @@ services:
     networks:
       - backend-network
 
+  matching-engine:
+    build:
+      context: ./backend/matchingEngine
+    container_name: matching-engine
+    depends_on:
+      - rabbitmq
+      - redis
+      - order-service
+    environment:
+      - NODE_ENV=development
+      - RABBITMQ_URL=amqp://rabbitmq
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - backend-network
+
 networks:
   backend-network:
     driver: bridge

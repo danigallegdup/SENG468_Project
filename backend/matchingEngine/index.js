@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const redis = require('redis');
-const { consumeOrder } = require('./rabbitmq');
+const { consumeOrders } = require('./matchingConsumer');
 const { matchOrder } = require('./matchOrder');
+const rabbitmq = require("../rabbitmq/rabbitmq"); // Import/start RabbitMQ
 const Order = require('../order/Order');
 
 const app = express();
