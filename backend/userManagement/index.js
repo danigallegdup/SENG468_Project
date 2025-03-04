@@ -46,6 +46,7 @@ app.post('/createStock', authMiddleware, async (req, res) => {
     }
 
     const newStock = new Stock({ stock_name, current_price: 0 });
+    newStock.stock_id = newStock._id;
     await newStock.save();
 
     res.json({ success: true, data: { stock_id: newStock._id } });
@@ -107,26 +108,6 @@ app.post('/addStockToUser', authMiddleware, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ success: false, data: { error: err.message } });
   }
-});
-
-/**
- * ----------------------------------------------------------------
- * GET /getWalletBalance
- * Get the balance of a wallet
- * ----------------------------------------------------------------
- */
-app.get('/getWalletBalance', authMiddleware, async (req, res) => {
-    try {
-        // Fetch the latest transaction by sorting with the actual timestamp in descending order.
-        const lastTransaction = await Wallet.findOne({ userId: req.user.id })
-            .sort({ timeStamp: 'desc' })
-            .exec();
-        const balance = lastTransaction ? lastTransaction.balance : 0;
-        return res.json({ success: true, data: { balance } });
-    } catch (err) {
-        console.error("Error fetching wallet balance:", err);
-        return res.status(500).json({ success: false, message: "Server error" });
-    }
 });
 
 /**

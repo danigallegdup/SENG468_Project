@@ -1,4 +1,4 @@
-// backend/userManagment/UserHeldStock.js
+// models/UserHeldStock.js
 // Schema for stocks held by users
 
 const mongoose = require('mongoose');

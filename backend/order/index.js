@@ -6,6 +6,7 @@ const cors = require('cors');
 const axios = require('axios');
 const connectDB = require('./db');
 const Order = require('./Order');
+const { v4: uuidv4 } = require("uuid");
 
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -30,125 +31,175 @@ app.get('/', (req, res) => {
  * 3) Once matched, calls other microservices to update wallet & stock portfolio
  * ----------------------------------------------------------------
  */
-app.post('/placeStockOrder', authMiddleware, async (req, res) => {
+app.post("/placeStockOrder", authMiddleware, async (req, res) => {
   try {
-    const { stock_id, is_buy, order_type, quantity, price } = req.body;
+    console.log("Order request received for user:", req.user.id);
+    let { stock_id, is_buy, order_type, quantity, price } = req.body;
 
-    if (!stock_id || typeof is_buy === 'undefined' || !order_type || !quantity) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields (stock_id, is_buy, order_type, quantity)',
-      });
-    }
-
-    if ((is_buy && order_type !== 'MARKET') || (!is_buy && order_type !== 'LIMIT')) {
+    // Validate required fields
+    if (
+      !stock_id ||
+      typeof is_buy === "undefined" ||
+      !order_type ||
+      !quantity
+    ) {
       return res
         .status(400)
-        .json({ success: false, message: 'BUY must be MARKET, SELL must be LIMIT' });
+        .json({ success: false, message: "Missing required fields" });
     }
 
-    // Create new order object
-    const newOrder = new Order({
-      user_id: req.user.id, // from authMiddleware
-      stock_id,
+    // Only accept BUY/MARKET and SELL/LIMIT
+    if (
+      (is_buy && order_type !== "MARKET") ||
+      (!is_buy && order_type !== "LIMIT")
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Invalid order type: BUY must be MARKET, SELL must be LIMIT",
+        });
+    }
+
+    let newOrder = new Order({
+      user_id: req.user.id, // Attach authenticated user ID
+      stock_id, // Ensure stock_id is ObjectId
+      stock_tx_id: uuidv4(), // Ensure stock_tx_id is ObjectId
       is_buy,
       order_type,
       quantity,
-      stock_price: is_buy ? null : price, 
-      order_status: 'IN_PROGRESS',
+      stock_price: is_buy ? null : price, // BUY/MARKET has no price
+      order_status: "IN_PROGRESS",
       created_at: new Date(),
-      stock_tx_id: `tx_${Date.now()}`,
       parent_stock_tx_id: null,
       wallet_tx_id: null,
     });
 
+    // Insert the order into MongoDB
+    // const result = await db.collection("orders").insertOne(newOrder);
+    // newOrder._id = result.insertedId; // Store generated MongoDB ID
     await newOrder.save();
-    console.log('Order placed:', newOrder);
 
-    let responseOrder = { ...newOrder._doc };
+    // Publish the order to RabbitMQ for async processing by the matching engine
+
+    console.log("Order placed:", newOrder);
 
     if (is_buy) {
-      const lowestSellOrder = await Order.findOne({
+      // Find the lowest sell orders
+      const lowestSellOrders = await Order.find({
         stock_id,
         is_buy: false,
-        order_status: 'IN_PROGRESS',
-      }).sort({ stock_price: 1 });
-
-      if (!lowestSellOrder) {
+        order_status: "IN_PROGRESS",
+      })
+        .sort({ stock_price: 1 })
+        .limit(1);
+      console.log("Lowest sell orders:", lowestSellOrders); // Debugging
+      if (lowestSellOrders.length === 0) {
         await Order.updateOne(
-          { _id: newOrder._id },
-          { $set: { order_status: 'CANCELLED' } }
+          { stock_tx_id: newOrder.stock_tx_id },
+          { $set: { order_status: "CANCELLED" } }
         );
-        responseOrder.order_status = 'CANCELLED';
-        return res.json({ success: true, data: responseOrder });
+        return res.json({ success: true, data: newOrder });
       }
 
-      await Order.updateOne(
-        { _id: newOrder._id },
-        {
-          $set: {
-            order_status: 'COMPLETED',
-            stock_price: lowestSellOrder.stock_price, // matched price
-            wallet_tx_id: `wallet_${Date.now()}`,
-          },
+      const lowestPrice = lowestSellOrders[0].stock_price;
+      console.log("Lowest price:", lowestPrice); // Debugging
+      const sellOrders = await Order.find({
+        stock_id,
+        is_buy: false,
+        order_status: "IN_PROGRESS",
+        stock_price: lowestPrice,
+      });
+      console.log("Sell orders at lowest price:", sellOrders); // Debugging
+
+      let totalAvailable = 0;
+      for (const sellOrder of sellOrders) {
+        totalAvailable += sellOrder.quantity;
+      }
+      console.log("Total available:", totalAvailable); // Debugging
+      if (totalAvailable < quantity) {
+        await Order.updateOne(
+          { stock_tx_id: newOrder.stock_tx_id },
+          { $set: { order_status: "CANCELLED" } }
+        );
+        return res.json({ success: true, data: newOrder });
+      }
+      // Loop through list of sell orders and match with buy order
+      for (let sellOrder of sellOrders) {
+        if (quantity === 0) {
+          break;
         }
-      );
-      await Order.updateOne(
-        { _id: lowestSellOrder._id },
-        { $set: { order_status: 'COMPLETED' } }
-      );
+        if (sellOrder.quantity <= quantity) {
+          quantity -= sellOrder.quantity;
+          await Order.updateOne(
+            { stock_tx_id: sellOrder.stock_tx_id },
+            { $set: { order_status: "COMPLETED" } }
+          );
+        } else {
+          await Order.updateOne(
+            { stock_tx_id: sellOrder.stock_tx_id },
+            { $set: { quantity: sellOrder.quantity - quantity } }
+          );
+          quantity = 0;
+        }
+      }
 
-      // 3) "Once matching is confirmed, update stockPortfolio and walletBalance"
-      const completedOrder = await Order.findById(newOrder._id);
-
-      try {
-        // (a) Update wallet
-        // Point this to your actual Wallet service endpoint
-        await axios.post(
-          `http://localhost:5002/transaction/updateWallet`,
+      if (quantity === 0) {
+        await Order.updateOne(
+          { stock_tx_id: newOrder.stock_tx_id },
           {
-            amount: completedOrder.stock_price * completedOrder.quantity,
-            order_status: completedOrder.order_status,
-            is_buy: completedOrder.is_buy,
-            stock_tx_id: completedOrder.stock_tx_id,
-            wallet_tx_id: completedOrder.wallet_tx_id,
-          },
-          {
-            headers: {
-              token: req.headers.token // forward the token if needed
+            $set: {
+              order_status: "COMPLETED",
+              stock_price: lowestPrice,
+              wallet_tx_id: uuidv4(),
             },
           }
         );
+      }
+    }
 
-        // (b) Update stock portfolio
-        // Point this to your actual Stock/Portfolio service endpoint
+    if (is_buy) {
+      newOrder = await Order.findOne({ stock_tx_id: newOrder.stock_tx_id });
+      if (newOrder.order_status === "COMPLETED") {
+        console.log("Order completed:", newOrder);
+        console.log("Updating wallet balance...");
         await axios.post(
-          `http://localhost:5003/transaction/UpdateStockPortfolio`,
+          `http://api-gateway:8080/transaction/updateWallet`,
           {
-            user_id: completedOrder.user_id,
-            stock_id: completedOrder.stock_id,
-            quantity: completedOrder.quantity,
-            is_buy: completedOrder.is_buy,
+            amount: newOrder.stock_price * newOrder.quantity,
+            order_status: newOrder.order_status,
+            is_buy: is_buy,
+            stock_tx_id: newOrder.stock_tx_id,
+            wallet_tx_id: newOrder.wallet_tx_id,
           },
           {
             headers: {
-              token: req.headers.token,
-            }
+              token: req.headers.token, // Pass the authorization header
+            },
           }
         );
-      } catch (err) {
-        console.error('Error updating wallet/portfolio:', err.message);
       }
-
-      // Update our response to reflect the final order state
-      responseOrder = { ...completedOrder._doc };
     }
 
-    // Return final updated order
-    res.json({ success: true, data: responseOrder });
+    await axios.post(
+      `${req.protocol}://api-gateway:8080/transaction/updateStockPortfolio`,
+      {
+        user_id: newOrder.user_id,
+        stock_id: newOrder.stock_id,
+        quantity: newOrder.quantity, // Adjust quantity based on buy/sell
+        is_buy: is_buy,
+      },
+      {
+        headers: {
+          token: req.headers.token, // Pass the authorization header
+        },
+      }
+    );
+
+    res.json({ success: true, data: newOrder });
   } catch (error) {
-    console.error('Error placing order:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error("Error placing order:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
