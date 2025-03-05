@@ -5,10 +5,10 @@ consumer.js: RabbitMQ consumer for the Order Service.
 */
 
 const amqp = require('amqplib');
-const matchOrder = require('../matchingEngine/matchOrder'); // Matching logic
+const { matchOrder } = require('../matchingEngine/matchOrder'); // Matching logic
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
-const QUEUE_NAME = 'orders';
+const ORDER_QUEUE = 'orders';
+const RESPONSE_QUEUE = 'order_responses';
 
 /**
  * Consumes (processes) orders from the RabbitMQ queue.
@@ -26,20 +26,22 @@ async function consumeOrders() {
             
         const channel = await connection.createChannel();
 
-        await channel.assertQueue(QUEUE_NAME, { durable: true });
+        await channel.assertQueue(ORDER_QUEUE, { durable: true });
+        await channel.assertQueue(RESPONSE_QUEUE, { durable: true });
 
         console.log('✅ Waiting for orders...');
 
-        channel.consume(QUEUE_NAME, async (msg) => {
+        channel.consume(ORDER_QUEUE, async (msg) => {
             if (msg !== null) {
                 const order = JSON.parse(msg.content.toString());
                 console.log(`📥 Received Order:`, order);
 
-                await matchOrder(order); // Match the order
+                matchResult = await matchOrder(order); // Match the order
 
                 const response = {
                     stock_tx_id: order.stock_tx_id,
                     matched: matchResult.matched,
+                    expense: matchResult.expense
                 };
 
                 channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });

@@ -11,7 +11,7 @@ const RESPONSE_QUEUE = 'order_responses';
  */
 async function waitForOrderResponse(stock_tx_id, timeout = 5000) {
   return new Promise(async (resolve) => {
-    const channel = await connectRabbitMQ();
+    const {connection, channel} = await connectRabbitMQ();
     await channel.assertQueue(RESPONSE_QUEUE, { durable: true });
 
     const timeoutId = setTimeout(() => {

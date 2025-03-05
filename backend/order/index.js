@@ -12,6 +12,7 @@ const authMiddleware = require('../middleware/authMiddleware'); // Import authMi
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
 const { connectRabbitMQ } = require("./rabbitmq"); // Import/start RabbitMQ
+const { waitForOrderResponse } = require("./orderResponseConsumer");
 
 const transactionServiceUrl = "http://transaction-service:3004";
 const userManagementServiceUrl = "http://usermanagement-service:3003";
@@ -21,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 connectDB();
-connectRabbitMQ();
+//connectRabbitMQ();
 
 // Health-check route
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -94,32 +95,6 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
     // If it's Buy/Market, deduct from the user's wallet and send to RabbitMQ for fulfillment by the matching engine
     // If it's Sell/Limit, add it to its respective redis set
     if (is_buy) {
-      const lowestPrice = await redisClient.get(`lowest_price:${stock_id}`);
-
-      if (!lowestPrice) {
-        return res.status(400).json({ success: false, message: 'No available price data for this stock.'});
-      }
-
-      const totalCost = lowestPrice*quantity;
-
-      const walletResponse = await axios.post(
-        `${userManagementServiceUrl}/subMoneyFromWallet`,
-        {
-          amount: totalCost
-        },
-        {
-          headers: {
-            token: req.headers.token // Pass the authorization header
-          }
-        }
-      );
-
-      if (!walletResponse.data.success) {
-        return res.status(400).json({success: false, message: 'Insufficient funds to place order.'});
-      }
-
-      // Add order to Database
-      await newOrder.save();
 
       // Publish order to RabbitMQ
       publishOrder(newOrder);
@@ -139,7 +114,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         // refund user and return appropriate response
         await axios.post(
           `${transactionServiceUrl}/addMoneyToWallet`,
-          { amount: totalCost },
+          { amount: response },
           { headers: { token: req.headers.token } }
         );
 

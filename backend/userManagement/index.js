@@ -10,6 +10,7 @@ const UserHeldStock = require('./UserHeldStock');
 const Wallet = require('./Wallet');
 const WalletTransaction = require('./WalletTransaction');
 const authMiddleware = require('../middleware/authMiddleware');
+const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
 
 
 const app = express();
@@ -145,50 +146,163 @@ app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
     }
 });
 
+// Internal Endpoints
+// Use a Service Token defined in .env
+
 /**
  * ----------------------------------------------------------------
- * POST /subMoneyFromWallet
- * Subtract a balance from a wallet
+ * POST /internal/addStockToUser
+ * Internal: Add stock to a user's account (Uses service token for authentication)
  * ----------------------------------------------------------------
  */
-app.post('/subMoneyFromWallet', authMiddleware, async (req, res) => {
+app.post('/internal/addStockToUser', async (req, res) => {
   try {
-      const { amount } = req.body;
-      if (!amount || amount <= 0) {
-          return res.status(400).json({
-              success: false,
-              data: { error: "amount must be a positive number" }
+      const { stock_id, quantity, user_id, service_token } = req.body;
+
+      // Validate service token
+      if (!service_token || service_token !== SERVICE_AUTH_TOKEN) {
+          console.log("Invalid service token: ", service_token);
+          console.log("Expected: ", SERVICE_AUTH_TOKEN);
+          return res.status(403).json({ success: false, message: "Unauthorized service request" });
+      }
+
+      // Validate inputs
+      if (!stock_id || !quantity || quantity <= 0 || !user_id) {
+          return res.status(400).json({ success: false, data: { error: "Valid stock_id, user_id, and positive quantity required" } });
+      }
+
+      // Check if the stock exists
+      const stockExists = await Stock.findById(stock_id);
+      if (!stockExists) {
+          return res.status(404).json({ success: false, data: { error: "Stock not found" } });
+      }
+
+      // Check if the user already holds this stock
+      let userStock = await UserHeldStock.findOne({ user_id, stock_id });
+
+      if (userStock) {
+          userStock.quantity_owned += quantity;
+          userStock.updated_at = new Date();
+          await userStock.save();
+      } else {
+          userStock = new UserHeldStock({
+              user_id,
+              stock_id,
+              stock_name: stockExists.stock_name,
+              quantity_owned: quantity,
+              updated_at: new Date()
           });
-      }
-      // Retrieve the current balance from the most recent transaction.
-      const lastTransaction = await WalletTransaction.findOne({ userId: req.user.id })
-          .sort({ timeStamp: 'desc' })
-          .exec();
-      const currentBalance = lastTransaction ? lastTransaction.balance : 0;
-
-      // Check balance will not be negative
-      const newBalance = currentBalance - amount;
-
-      if (newBalance < 0) {
-        return res.status(400).json({
-            success: false,
-            data: { error: "User has insufficient funds" }
-        });
+          await userStock.save();
       }
 
-      const newTransaction = new Wallet({
-          userId: req.user.id,
-          balance: newBalance,
-          timeStamp: new Date() // Set the actual timestamp when the transaction is made.
-      });
-      
-      await newTransaction.save();
       return res.json({ success: true, data: null });
   } catch (err) {
-      console.error("Error adding money to wallet:", err);
+      console.error("Error in internal addStockToUser:", err);
       return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
+/**
+ * ----------------------------------------------------------------
+ * POST /internal/addMoneyToWallet
+ * Internal: Add balance to a wallet (Uses service token specified in .env)
+ * ----------------------------------------------------------------
+ */
+app.post('/internal/addMoneyToWallet', async (req, res) => {
+  try {
+    console.log("🔍 Received Wallet addMoney API Request:", req.body);
+      const { amount, user_id, service_token } = req.body;
+
+      // Validate service token
+      if (!service_token || service_token !== SERVICE_AUTH_TOKEN) {
+          return res.status(403).json({ success: false, message: "Unauthorized service request" });
+      }
+
+      if (!amount || amount <= 0 || !user_id) {
+          return res.status(400).json({
+              success: false,
+              data: { error: "Valid amount and user_id are required" }
+          });
+      }
+
+      // Retrieve the current balance from the most recent transaction.
+      const lastTransaction = await WalletTransaction.findOne({ userId: user_id })
+          .sort({ timeStamp: 'desc' })
+          .exec();
+      const currentBalance = lastTransaction ? lastTransaction.balance : 0;
+      const newBalance = currentBalance + amount;
+
+      // Save new balance
+      const newTransaction = new Wallet({
+          userId: user_id,
+          balance: newBalance,
+          timeStamp: new Date()
+      });
+      await newTransaction.save();
+
+      return res.json({ success: true, data: null });
+  } catch (err) {
+      console.error("Error in internal addMoneyToWallet:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+/**
+* ----------------------------------------------------------------
+* POST /internal/subMoneyFromWallet
+* Internal: Subtract balance from a wallet (Uses user token specified in .env)
+* ----------------------------------------------------------------
+*/
+app.post('/internal/subMoneyFromWallet', async (req, res) => {
+  try {
+      console.log("🔍 Received Wallet subMoney API Request:", req.body);
+      const { amount, user_id, service_token } = req.body;
+
+      // Validate service token
+      if (!service_token || service_token !== SERVICE_AUTH_TOKEN) {
+        console.log("Invalid service token: ", service_token);
+        console.log("Expected: ", SERVICE_AUTH_TOKEN);
+          return res.status(403).json({ success: false, message: "Unauthorized service request" });
+      }
+
+      if (!amount || amount <= 0 || !user_id) {
+          return res.status(400).json({
+              success: false,
+              data: { error: "Valid amount and user_id are required" }
+          });
+      }
+
+      // Retrieve the current balance from the most recent transaction.
+      const lastTransaction = await WalletTransaction.findOne({ userId: user_id })
+          .sort({ timeStamp: 'desc' })
+          .exec();
+      const currentBalance = lastTransaction ? lastTransaction.balance : 0;
+      const newBalance = currentBalance - amount;
+
+      // Ensure user has sufficient balance
+      if (newBalance < 0) {
+          return res.status(400).json({
+              success: false,
+              data: { error: "User has insufficient funds" }
+          });
+      }
+
+      // Save new balance
+      const newTransaction = new Wallet({
+          userId: user_id,
+          balance: newBalance,
+          timeStamp: new Date()
+      });
+      await newTransaction.save();
+
+      return res.json({ success: true, data: null });
+  } catch (err) {
+      console.error("Error in internal subMoneyFromWallet:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 
 // Start server
 const PORT = process.env.USERMANAGEMENT_SERVICE_PORT || 3003;

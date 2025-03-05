@@ -5,8 +5,16 @@ matchOrder.js: RabbitMQ consumer for the Order Service.
 */
 
 const Order = require("./Order");
-const { cacheStockPrice } = require("./redis");
-const SERVICE_AUTH_TOKEN = process.env.SERVICE_AUTH_TOKEN;
+const redisClient = require("./redis");
+const axios = require('axios');
+require('dotenv').config();
+const SERVICE_AUTH_TOKEN = "supersecretauthtoken";
+const userManagementServiceUrl = "http://usermanagement-service:3003";
+const transactionServiceUrl = "http://transaction-service:3004";
+
+
+
+
 
 /**
  * Matches incoming orders (Buy/Market) with Limit Sell orders.
@@ -15,7 +23,10 @@ const SERVICE_AUTH_TOKEN = process.env.SERVICE_AUTH_TOKEN;
 
 async function matchOrder(newOrder) {
   try {
-    if (!newOrder.is_buy) return { matched: false }; // Only match BUY/MARKET orders
+    if (!newOrder.is_buy) {
+      console.error(`❌ ERROR: Sell order reached matchOrder()!`, JSON.stringify(newOrder, null, 2));
+      return { matched: false };
+    }
 
     // Find the lowest available SELL/LIMIT order
     const lowestSellOrder = await redisClient.zRangeWithScores(
@@ -23,20 +34,32 @@ async function matchOrder(newOrder) {
       0, 0, {rev: false}
     );
 
-
     // Check for a match
-    if (!lowestSellOrder.length) {
+    if (!lowestSellOrder || !lowestSellOrder.length) {
       console.log("No matching Sell orders found.");
       return { matched: false };
-    } 
+    }
 
     // Match is found
     let sellOrder = JSON.parse(lowestSellOrder[0].value);
 
+    let stockPrice = sellOrder?.stock_price;
+    let quantity = newOrder?.quantity
+    let totalCost = stockPrice*quantity;
+
+    console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
+
+    // Subtract money from user's wallet
+    const walletResponse = await updateWallet(newOrder.user_id, totalCost, true);
+
+    // Return failure if insufficient funds
+    if (!walletResponse.data.success) {
+      return {success: false, message: 'Insufficient funds to place order.'};
+    }
     
     // Check BUY order can be fulfilled by market price order
     if (sellOrder.quantity < newOrder.quantity) {
-      console.log("Cannot fulfill order. Available stocks at MARKET price: ", lowestSellOrder.quantity);
+      console.log("Cannot fulfill order. Available stocks at MARKET price: ", sellOrder.quantity);
       return { matched: false };
     }
 
@@ -111,9 +134,10 @@ async function matchOrder(newOrder) {
     // Update seller's wallet
     await updateWallet(sellOrder.user_id, sellOrder.stock_price*newOrder.quantity, false);
 
-    return { matched: true };
+    return { matched: true, expense: sellOrder.stock_price*newOrder.quantity };
 
   } catch (error) {
+    console.log("!! SERVICE_AUTH_TOKEN:", SERVICE_AUTH_TOKEN);
     console.error("❌ Error matching order:", error);
     return { matched: false };
   }
@@ -124,27 +148,29 @@ async function matchOrder(newOrder) {
  */
 async function updateWallet(user_id, amount, isCharge) {
   try {
-      const walletResponse = await axios.post(
-        `${req.protocol}://${req.get(
-          "host"
-        )}/transaction/subMoneyFromWallet`,
-        {
-          user_id: newOrder.user_id,
-          stock_id: newOrder.stock_id,
-          quantity: -newOrder.quantity, // Adjust quantity based on buy/sell
-          is_buy: is_buy,
-        },
-        {
-          headers: {
-            token: SERVICE_AUTH_TOKEN // Pass the authorization header
-          },
-        }
-      );
 
-    if (response.data.success) {
+    const endpoint = isCharge ? "internal/subMoneyFromWallet" : "internal/addMoneyToWallet";
+
+    console.log("🔍 Sending Wallet Update Request:", {
+      amount: totalCost,
+      user_id: newOrder.user_id,
+      service_token: SERVICE_AUTH_TOKEN
+    });
+  
+
+    const walletResponse = await axios.post(
+      `${userManagementServiceUrl}/${endpoint}`,
+      { 
+        amount, 
+        user_id, 
+        service_token: SERVICE_AUTH_TOKEN // Use service token
+      }
+    );
+
+    if (walletResponse.data.success) {
       console.log(`💰 Wallet updated for user ${user_id}: ${isCharge ? "-" : "+"}$${amount}`);
     } else {
-      console.error(`⚠️ Failed to update wallet for user ${user_id}`);
+      console.error(`⚠️ Failed to update wallet for user ${user_id}:`, walletResponse.data);
     }
   } catch (error) {
     console.error(`❌ Error updating wallet for user ${user_id}:`, error);
@@ -157,24 +183,17 @@ async function updateWallet(user_id, amount, isCharge) {
 async function updateStockPortfolio(user_id, stock_id, quantity, is_buy) {
   try {
       const portfolioResponse = await axios.post(
-        `${req.protocol}://${req.get(
-          "host"
-        )}/transaction/addStockToUser`,
+        `${transactionServiceUrl}/internal/addStockToUser`,
         {
-          user_id: user_id,
           stock_id: stock_id,
-          quantity, // Adjust quantity based on buy/sell
-          is_buy: is_buy,
-        },
-        {
-          headers: {
-            token: SERVICE_AUTH_TOKEN, // Pass the authorization header
-          },
+          quantity,
+          user_id: user_id,
+          service_token: SERVICE_AUTH_TOKEN
         }
       );
 
-    if (response.data.success) {
-      console.log(`📈 Portfolio updated for user ${user_id}: ${isBuy ? "+" : "-"}${quantity} shares of ${stock_id}`);
+    if (portfolioResponse.data.success) {
+      console.log(`📈 Portfolio updated for user ${user_id}: ${is_buy ? "+" : "-"}${quantity} shares of ${stock_id}`);
     } else {
       console.error(`⚠️ Failed to update portfolio for user ${user_id}`);
     }

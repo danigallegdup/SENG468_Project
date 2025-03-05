@@ -7,7 +7,6 @@ producer.js: RabbitMQ producer for the Order Service.
 
 const amqp = require('amqplib');
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
 const QUEUE_NAME = 'orders';
 
 /**
@@ -16,7 +15,15 @@ const QUEUE_NAME = 'orders';
  */
 async function publishOrder(order) {
     try {
-        const connection = await amqp.connect(RABBITMQ_URL);
+        const connection = await amqp.connect({
+            protocol: 'amqp',
+            hostname: 'rabbitmq',
+            port: 5672,
+            username: 'admin',
+            password: 'admin',
+            vhost: '/'
+        });
+
         const channel = await connection.createChannel();
 
         await channel.assertQueue(QUEUE_NAME, { durable: true });

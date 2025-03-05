@@ -6,8 +6,11 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const SERVICE_AUTH_TOKEN = process.env.SERVICE_AUTH_TOKEN;
+
 module.exports = (req, res, next) => {
     const token = req.header('token');
+    console.log("req.header('token'):",req.header('token'));
     console.log("Token Received:", token); // ✅ Check if token is being sent
 
     if (!token) {
@@ -15,6 +18,10 @@ module.exports = (req, res, next) => {
     }
 
     try {
+        if (token == SERVICE_AUTH_TOKEN) {
+            return next();
+        }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded Token:", decoded); // ✅ Check if token is valid
         req.user = decoded;

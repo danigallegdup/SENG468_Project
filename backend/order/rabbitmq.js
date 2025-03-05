@@ -16,6 +16,7 @@ async function connectRabbitMQ() {
     channel = await connection.createChannel();
     await channel.assertQueue('orderQueue', { durable: true });
     console.log('✅ orderService: RabbitMQ connected');
+    return { connection, channel }
   } catch (error) {
     console.error('❌ orderService: RabbitMQ connection error:', error);
   }
