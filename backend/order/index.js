@@ -14,8 +14,8 @@ const redisClient = require("./redis"); // Import Redis
 const { connectRabbitMQ } = require("./rabbitmq"); // Import/start RabbitMQ
 const { waitForOrderResponse } = require("./orderResponseConsumer");
 
-const transactionServiceUrl = "http://transaction-service:3004";
-const userManagementServiceUrl = "http://usermanagement-service:3003";
+const transactionServiceUrl = "http://api-gateway:8080/transaction";
+const userManagementServiceUrl = "http://api-gateway:8080/setup";
 
 const app = express();
 app.use(cors());
@@ -113,35 +113,45 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         return res.status(200).json({success: true, data: null});
       } else {
         // refund user and return appropriate response
+        console.log('Order not matched. Refunding user.');
         await axios.post(
-          `${transactionServiceUrl}/addMoneyToWallet`,
-          { amount: response },
+          `${transactionServiceUrl}/updateWallet`,
+          {
+            amount: newOrder.stock_price * newOrder.quantity,
+            order_status: newOrder.order_status,
+            is_buy: is_buy,
+            stock_tx_id: newOrder.stock_tx_id,
+            wallet_tx_id: newOrder.wallet_tx_id,
+          },
           { headers: { token: req.headers.token } }
         );
 
         return res.status(200).json({success: false, data: 'error: '});
       }
 
-    } else {
+    } 
+    else {
       // Attempt to deduct stocks from user's portfolio
-      const portfolioResponse = await axios.post(
-        `${userManagementServiceUrl}/addStockToUser`,
-        {
-          user_id: newOrder.user_id,
-          stock_id: newOrder.stock_id,
-          quantity: -newOrder.quantity, // Adjust quantity based on buy/sell
-          is_buy: is_buy,
-        },
-        {
-          headers: {
-            token: req.headers.token, // Pass the authorization header
-          },
-        }
-      );
+      console.log('Processing SELL/LIMIT order:', newOrder);
+      // const portfolioResponse = await axios.post(
+      //   `${transactionServiceUrl}/updateWallet`,
+      //   {
+      //     amount: newOrder.stock_price * newOrder.quantity,
+      //     order_status: newOrder.order_status,
+      //     is_buy: is_buy,
+      //     stock_tx_id: newOrder.stock_tx_id,
+      //     wallet_tx_id: newOrder.wallet_tx_id,
+      //   },
+      //   {
+      //     headers: {
+      //       token: req.headers.token, // Pass the authorization header
+      //     },
+      //   }
+      // );
 
-      if (!portfolioResponse.data.success) {
-        return res.status(400).json({success: false, message: 'Insufficient stocks to place order.'});
-      }
+      // if (!portfolioResponse.data.success) {
+      //   return res.status(400).json({success: false, message: 'Insufficient stocks to place order.'});
+      // }
 
       // Add order to database
       await newOrder.save();
@@ -161,6 +171,22 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       }
 
     }
+
+    console.log("Order placed successfully:", newOrder);
+    await axios.post(
+      `${transactionServiceUrl}/updateStockPortfolio`,
+      {
+        user_id: newOrder.user_id,
+        stock_id: newOrder.stock_id,
+        quantity: newOrder.quantity, // Adjust quantity based on buy/sell
+        is_buy: is_buy,
+      },
+      {
+        headers: {
+          token: req.headers.token, // Pass the authorization header
+        },
+      }
+    );
     // Return order confirmation
     res.json({ success: true, data: newOrder });
 

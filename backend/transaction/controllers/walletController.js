@@ -94,8 +94,10 @@ exports.updateWallet = async (req, res) => {
                   });
             }
             newBalance = currentBalance - amount;
+            transactionType = 'withdrawal';
         } else {
             newBalance = currentBalance + amount;
+            transactionType = "deposit";
         }
   
         const newTransaction = new WalletTransaction({
