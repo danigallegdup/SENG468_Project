@@ -23,7 +23,7 @@ async function matchOrder(newOrder) {
   try {
     if (!newOrder.is_buy) {
       console.error(`❌ ERROR: Sell order reached matchOrder()!`, JSON.stringify(newOrder, null, 2));
-      return { matched: false };
+      return { matched: false, expense: 0 };
     }
 
     // Get Market Price from Reddit variable
@@ -31,7 +31,7 @@ async function matchOrder(newOrder) {
 
     if (!marketPrice) {
       console.log("⚠️ No market price available for ", newOrder.stock_id);
-      return { matched: false };
+      return { matched: false, expense: 0 };
     }
 
     marketPrice = parseFloat(marketPrice);
@@ -50,7 +50,7 @@ async function matchOrder(newOrder) {
 
     // Return failure if insufficient funds
     if (!walletResponse || !walletResponse.success) {
-      return { success: false, message: 'Insufficient funds to place order.' };
+      return { matched: false, expense: totalCost, message: 'Insufficient funds to place order.' };
     }
     
     // Find the lowest available SELL/LIMIT order
@@ -62,7 +62,7 @@ async function matchOrder(newOrder) {
     // Check for a match
     if (!lowestSellOrder || !lowestSellOrder.length) {
       console.log("No matching Sell orders found.");
-      return { matched: false };
+      return { matched: false, expense: totalCost };
     }
 
     // Match is found
@@ -71,7 +71,7 @@ async function matchOrder(newOrder) {
     // Check BUY order can be fulfilled by market price order
     if (sellOrder.quantity < newOrder.quantity) {
       console.log("Cannot fulfill order. Available stocks at MARKET price: ", sellOrder.quantity);
-      return { matched: false };
+      return { matched: false, expense: totalCost };
     }
 
     let executedQuantity = sellOrder.quantity-newOrder.quantity;

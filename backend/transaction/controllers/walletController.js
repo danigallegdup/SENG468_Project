@@ -85,6 +85,7 @@ exports.updateWallet = async (req, res) => {
         console.log("Current balance: ", currentBalance);
 
         let newBalance;
+        let isDebit;
         if (is_buy) {
             // Buy order: deduct funds.
             if (currentBalance-amount < 0) {
@@ -95,16 +96,20 @@ exports.updateWallet = async (req, res) => {
             }
             newBalance = currentBalance - amount;
             transactionType = 'withdrawal';
+            isDebit = true;
         } else {
             newBalance = currentBalance + amount;
             transactionType = "deposit";
+            isDebit = false;
         }
   
         const newTransaction = new WalletTransaction({
             userId: user_id,
             amount,
+            type: transactionType,
             balance: newBalance,
             stock_tx_id,
+            is_debit: isDebit,
             wallet_tx_id,
             timeStamp: new Date() // Actual timestamp when the transaction is made.
         });
