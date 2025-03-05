@@ -81,6 +81,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
     const newOrder = new Order({
       user_id: req.user.id, // from authMiddleware
       stock_id,
+      stock_tx_id: uuidv4(),
       is_buy,
       order_type,
       quantity,
@@ -88,7 +89,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       order_status: "IN_PROGRESS",
       created_at: new Date(),
       parent_stock_tx_id: null,
-      wallet_tx_id: null,
+      wallet_tx_id: null
     });
 
     // Process order
@@ -101,7 +102,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       console.log('Sent MARKET/BUY order to RabbitMQ:', newOrder);
 
       // Get response from Order Response RabbitMQ Queue
-      const response = await waitForOrderResponse(newOrder.stock_tx_id, 10000);
+      const response = await waitForOrderResponse(newOrder.stock_tx_id, 1000000);
 
       if (!response) {
         return res.status(500).json({ success: false, message: 'Order processing timeout' });
@@ -201,7 +202,7 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
       const redisKey = `sell_orders:${order.stock_id}`;
       
       // Retrieve full sorted set entry
-      const sellOrders = await redisClient.zrange(redisKey, 0, -1);
+      const sellOrders = await redisClient.zRange(redisKey, 0, -1);
       const matchingOrder = sellOrders.find(o => JSON.parse(o).stock_tx_id === stock_tx_id);
 
       if (matchingOrder) {

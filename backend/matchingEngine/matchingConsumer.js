@@ -33,21 +33,27 @@ async function consumeOrders() {
 
         channel.consume(ORDER_QUEUE, async (msg) => {
             if (msg !== null) {
-                const order = JSON.parse(msg.content.toString());
-                console.log(`📥 Received Order:`, order);
+                try {
+                    const order = JSON.parse(msg.content.toString());
+                    console.log(`📥 Received Order:`, order);
 
-                matchResult = await matchOrder(order); // Match the order
+                    const matchResult = await matchOrder(order); // Match the order
 
-                const response = {
-                    stock_tx_id: order.stock_tx_id,
-                    matched: matchResult.matched,
-                    expense: matchResult.expense
-                };
+                    const response = {
+                        stock_tx_id: order.stock_tx_id,
+                        matched: matchResult.matched,
+                        expense: matchResult.expense
+                    };
 
-                channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });
-                console.log(`📤 Sent order response for ${order.stock_tx_id}: ${response.order_status}`);
-            
-                channel.ack(msg); // Acknowledge message to remove from queue
+                    channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });
+                    console.log(`📤 Sent order response for ${order.stock_tx_id}: ${response.matched ? 'Matched' : 'Not Matched'}`);
+
+                    channel.ack(msg); // ✅ Acknowledge message on success
+
+                } catch (error) {
+                    console.error("❌ Error processing order:", error);
+                    channel.nack(msg, false, false); // ❌ Reject the message (do not requeue)
+                }
             }
         }, { noAck: false });
 

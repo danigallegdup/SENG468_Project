@@ -47,6 +47,10 @@ async function matchOrder(newOrder) {
     let quantity = newOrder?.quantity
     let totalCost = stockPrice*quantity;
 
+    if (typeof totalCost === "undefined") {
+      throw new Error("❌ ERROR: totalCost is undefined! Check sellOrder or newOrder.");
+    }
+
     console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
 
     // Subtract money from user's wallet
@@ -152,11 +156,14 @@ async function updateWallet(user_id, amount, isCharge) {
     const endpoint = isCharge ? "internal/subMoneyFromWallet" : "internal/addMoneyToWallet";
 
     console.log("🔍 Sending Wallet Update Request:", {
-      amount: totalCost,
-      user_id: newOrder.user_id,
+      amount: amount,
+      user_id: user_id,
       service_token: SERVICE_AUTH_TOKEN
     });
   
+    if (typeof amount !== "number" || isNaN(amount)) {
+      throw new Error(`❌ ERROR: Invalid amount provided for wallet update: ${amount}`);
+    }  
 
     const walletResponse = await axios.post(
       `${userManagementServiceUrl}/${endpoint}`,
@@ -167,13 +174,24 @@ async function updateWallet(user_id, amount, isCharge) {
       }
     );
 
+    console.log("✅ Wallet API Response:", walletResponse.data); // 
+
     if (walletResponse.data.success) {
       console.log(`💰 Wallet updated for user ${user_id}: ${isCharge ? "-" : "+"}$${amount}`);
     } else {
       console.error(`⚠️ Failed to update wallet for user ${user_id}:`, walletResponse.data);
     }
   } catch (error) {
-    console.error(`❌ Error updating wallet for user ${user_id}:`, error);
+    console.error(`❌ Error updating wallet for user ${user_id}:`, 
+      error.response?.data || error.message
+    );
+
+    console.error("⚠️ Full Response from UserManagement Service:", JSON.stringify(error.response?.data, null, 2));
+
+    return { 
+        success: false, 
+        data: { error: error.response?.data?.error || "Unknown error" } 
+    };
   }
 }
 
@@ -182,11 +200,12 @@ async function updateWallet(user_id, amount, isCharge) {
  */
 async function updateStockPortfolio(user_id, stock_id, quantity, is_buy) {
   try {
+
       const portfolioResponse = await axios.post(
         `${transactionServiceUrl}/internal/addStockToUser`,
         {
           stock_id: stock_id,
-          quantity,
+          quantity: quantity,
           user_id: user_id,
           service_token: SERVICE_AUTH_TOKEN
         }

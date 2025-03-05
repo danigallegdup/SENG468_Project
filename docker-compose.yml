@@ -140,7 +140,6 @@ services:
       - "6379:6379"
     networks:
       - backend-network
-
   matching-engine:
     build:
       context: ./backend/matchingEngine
