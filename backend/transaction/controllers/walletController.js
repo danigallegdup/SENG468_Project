@@ -103,6 +103,9 @@ exports.updateWallet = async (req, res) => {
             // Buy order: deduct funds.
             newBalance = currentBalance - amount;
             transactionType = 'withdrawal';
+        } else {
+            newBalance = currentBalance - amount;
+            transactionType = "deposit";
         }
         lastTransaction.balance = newBalance;
         await lastTransaction.save();
