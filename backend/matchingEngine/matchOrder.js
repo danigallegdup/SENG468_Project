@@ -161,7 +161,7 @@ async function matchOrder(newOrder) {
 async function updateWallet(user_id, amount, is_buy, stock_tx_id, wallet_tx_id) {
   try {
     console.log("🔍 Sending Wallet Update Request:", {
-      user_id: user_id,
+      userId: user_id,
       amount: amount,
       is_buy: is_buy,
       stock_tx_id: stock_tx_id,
@@ -175,9 +175,8 @@ async function updateWallet(user_id, amount, is_buy, stock_tx_id, wallet_tx_id) 
     const walletResponse = await axios.post(
       `${transactionServiceUrl}/updateWallet`,
       { 
+        userId: user_id, 
         amount, 
-        user_id, 
-        order_status: "COMPLETED", // Ensuring the trade is confirmed before modifying balance
         is_buy, 
         stock_tx_id, 
         wallet_tx_id 
