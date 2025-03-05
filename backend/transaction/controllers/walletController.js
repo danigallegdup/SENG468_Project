@@ -37,7 +37,7 @@ exports.getWalletTransactions = async (req, res) => {
 };
 
 exports.addMoneyToWallet = async (req, res) => {
-    try {
+    try {/*
         const { amount } = req.body;
         if (!amount || amount <= 0) {
             return res.status(400).json({
@@ -58,7 +58,7 @@ exports.addMoneyToWallet = async (req, res) => {
             timeStamp: new Date() // Set the actual timestamp when the transaction is made.
         });
         await newTransaction.save();
-        return res.json({ success: true, data: null });
+        return res.json({ success: true, data: null });*/
     } catch (err) {
         console.error("Error adding money to wallet:", err);
         return res.status(500).json({ success: false, message: "Server error" });
@@ -67,22 +67,8 @@ exports.addMoneyToWallet = async (req, res) => {
 
 exports.updateWallet = async (req, res) => {
     try {
-        const { amount, order_status, is_buy, stock_tx_id, wallet_tx_id } = req.body;
-        console.log("Order status: ", order_status);
-        if (order_status !== 'COMPLETED') {
-            return res.status(400).json({
-                success: false,
-                data: { error: "Order is not completed; wallet not updated" }
-            });
-        }
-        console.log("Amount: ", amount);
-        if (!amount || amount <= 0) {
-            return res.status(400).json({
-                success: false,
-                data: { error: "Amount must be a positive number" }
-            });
-        }
-        console.log("Is buy: ", is_buy);
+        const { user_id, amount, is_buy, stock_tx_id, wallet_tx_id } = req.body;
+
         if (typeof is_buy === 'undefined') {
             return res.status(400).json({
                 success: false,
@@ -92,25 +78,29 @@ exports.updateWallet = async (req, res) => {
   
         console.log("Updating wallet...");
         // Get the current balance from the most recent transaction using the actual timestamp.
-        const lastTransaction = await Wallet.findOne({ userId: req.user.id })
+        const lastTransaction = await Wallet.findOne({ userId: user_id })
             .sort({ timeStamp: 'desc' })
             .exec();
         const currentBalance = lastTransaction ? lastTransaction.balance : 0;
         console.log("Current balance: ", currentBalance);
 
-        let newBalance, transactionType;
+        let newBalance;
         if (is_buy) {
             // Buy order: deduct funds.
+            if (currentBalance-amount < 0) {
+                return res.status(400).json({
+                    success: false,
+                    data: { error: "Insufficient funds" }
+                  });
+            }
             newBalance = currentBalance - amount;
-            transactionType = 'withdrawal';
+        } else {
+            newBalance = currentBalance + amount;
         }
-        lastTransaction.balance = newBalance;
-        await lastTransaction.save();
   
         const newTransaction = new WalletTransaction({
-            userId: req.user.id,
+            userId: user_id,
             amount,
-            type: transactionType,
             balance: newBalance,
             stock_tx_id,
             wallet_tx_id,

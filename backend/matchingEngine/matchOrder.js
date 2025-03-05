@@ -11,9 +11,7 @@ require('dotenv').config();
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";
 const userManagementServiceUrl = "http://usermanagement-service:3003";
 const transactionServiceUrl = "http://transaction-service:3004";
-
-
-
+const { v4: uuidv4 } = require("uuid"); 
 
 
 /**
@@ -28,6 +26,33 @@ async function matchOrder(newOrder) {
       return { matched: false };
     }
 
+    // Get Market Price from Reddit variable
+    let marketPrice = await redisClient.get(`market_price:${newOrder.stock_id}`);
+
+    if (!marketPrice) {
+      console.log("⚠️ No market price available for ", newOrder.stock_id);
+      return { matched: false };
+    }
+
+    marketPrice = parseFloat(marketPrice);
+    totalCost = marketPrice*newOrder.quantity;
+
+    console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
+
+    // Subtract money from user's wallet
+    const walletResponse = await updateWallet(
+      newOrder.user_id, 
+      totalCost, 
+      true,
+      newOrder.stock_tx_id,
+      uuidv4()
+    );
+
+    // Return failure if insufficient funds
+    if (!walletResponse || !walletResponse.success) {
+      return { success: false, message: 'Insufficient funds to place order.' };
+    }
+    
     // Find the lowest available SELL/LIMIT order
     const lowestSellOrder = await redisClient.zRangeWithScores(
       `sell_orders:${newOrder.stock_id}`,
@@ -43,24 +68,6 @@ async function matchOrder(newOrder) {
     // Match is found
     let sellOrder = JSON.parse(lowestSellOrder[0].value);
 
-    let stockPrice = sellOrder?.stock_price;
-    let quantity = newOrder?.quantity
-    let totalCost = stockPrice*quantity;
-
-    if (typeof totalCost === "undefined") {
-      throw new Error("❌ ERROR: totalCost is undefined! Check sellOrder or newOrder.");
-    }
-
-    console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
-
-    // Subtract money from user's wallet
-    const walletResponse = await updateWallet(newOrder.user_id, totalCost, true);
-
-    // Return failure if insufficient funds
-    if (!walletResponse.data.success) {
-      return {success: false, message: 'Insufficient funds to place order.'};
-    }
-    
     // Check BUY order can be fulfilled by market price order
     if (sellOrder.quantity < newOrder.quantity) {
       console.log("Cannot fulfill order. Available stocks at MARKET price: ", sellOrder.quantity);
@@ -70,6 +77,7 @@ async function matchOrder(newOrder) {
     let executedQuantity = sellOrder.quantity-newOrder.quantity;
     console.log(`🔄 Matching ${executedQuantity}/${newOrder.quantity} shares at ${sellOrder.stock_price}`);
 
+    // Handle sell order
     // If the sell order has more shares than the buy order, partially fulfill it
     if (sellOrder.quantity > newOrder.quantity) {
       let remainingQuantity = sellOrder.quantity-newOrder.quantity;
@@ -150,76 +158,89 @@ async function matchOrder(newOrder) {
 /**
  * Updates wallet balance using API
  */
-async function updateWallet(user_id, amount, isCharge) {
+async function updateWallet(user_id, amount, is_buy, stock_tx_id, wallet_tx_id) {
   try {
-
-    const endpoint = isCharge ? "internal/subMoneyFromWallet" : "internal/addMoneyToWallet";
-
     console.log("🔍 Sending Wallet Update Request:", {
-      amount: amount,
       user_id: user_id,
-      service_token: SERVICE_AUTH_TOKEN
+      amount: amount,
+      is_buy: is_buy,
+      stock_tx_id: stock_tx_id,
+      wallet_tx_id: wallet_tx_id
     });
-  
+
     if (typeof amount !== "number" || isNaN(amount)) {
       throw new Error(`❌ ERROR: Invalid amount provided for wallet update: ${amount}`);
     }  
 
     const walletResponse = await axios.post(
-      `${userManagementServiceUrl}/${endpoint}`,
+      `${transactionServiceUrl}/updateWallet`,
       { 
         amount, 
         user_id, 
-        service_token: SERVICE_AUTH_TOKEN // Use service token
+        order_status: "COMPLETED", // Ensuring the trade is confirmed before modifying balance
+        is_buy, 
+        stock_tx_id, 
+        wallet_tx_id 
+      },
+      {
+        headers: { 
+          "token": SERVICE_AUTH_TOKEN
+        }
       }
     );
 
-    console.log("✅ Wallet API Response:", walletResponse.data); // 
+    console.log("✅ Wallet API Response:", walletResponse.data);
 
     if (walletResponse.data.success) {
-      console.log(`💰 Wallet updated for user ${user_id}: ${isCharge ? "-" : "+"}$${amount}`);
+      console.log(`💰 Wallet updated for user ${user_id}: ${is_buy ? "-" : "+"}$${amount}`);
+      return { success: true };
     } else {
       console.error(`⚠️ Failed to update wallet for user ${user_id}:`, walletResponse.data);
+      return { success: false, message: walletResponse.data.message };
     }
+
   } catch (error) {
     console.error(`❌ Error updating wallet for user ${user_id}:`, 
       error.response?.data || error.message
     );
-
-    console.error("⚠️ Full Response from UserManagement Service:", JSON.stringify(error.response?.data, null, 2));
-
-    return { 
-        success: false, 
-        data: { error: error.response?.data?.error || "Unknown error" } 
-    };
+    return { success: false, message: error.response?.data?.error || "Unknown error" };
   }
 }
+
 
 /**
  * Updates stock portfolio using API
  */
-async function updateStockPortfolio(user_id, stock_id, quantity, is_buy) {
+async function updateStockPortfolio(user_id, stock_id, quantity) {
   try {
+    console.log("🔍 Sending Stock Portfolio Update Request:", {
+      user_id: user_id,
+      stock_id: stock_id,
+      quantity: quantity
+    });
 
-      const portfolioResponse = await axios.post(
-        `${transactionServiceUrl}/internal/addStockToUser`,
-        {
-          stock_id: stock_id,
-          quantity: quantity,
-          user_id: user_id,
-          service_token: SERVICE_AUTH_TOKEN
-        }
-      );
+    const portfolioResponse = await axios.post(
+      `${transactionServiceUrl}/addStockToUser`,
+      {
+        stock_id,
+        quantity,
+        user_id
+      }
+    );
 
     if (portfolioResponse.data.success) {
-      console.log(`📈 Portfolio updated for user ${user_id}: ${is_buy ? "+" : "-"}${quantity} shares of ${stock_id}`);
+      console.log(`📈 Portfolio updated for user ${user_id}: +${quantity} shares of ${stock_id}`);
+      return { success: true };
     } else {
       console.error(`⚠️ Failed to update portfolio for user ${user_id}`);
+      return { success: false, message: portfolioResponse.data.message };
     }
   } catch (error) {
     console.error(`❌ Error updating stock portfolio for user ${user_id}:`, error);
+    return { success: false, message: error.response?.data?.error || "Unknown error" };
   }
 }
+
 
 
 module.exports = { matchOrder };

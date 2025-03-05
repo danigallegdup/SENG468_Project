@@ -154,10 +154,10 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       console.log(`Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`);
 
       // Update lowest price for stock
-      const currentLowestPrice = await redisClient.get(`lowest_price:${stock_id}`);
+      const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
-        await redisClient.set(`lowest_price:${stock_id}`, price);
-        console.log(`Updated lowest price for stock ${stock_id}: ${price}`);
+        await redisClient.set(`market_price:${stock_id}`, price);
+        console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
 
     }
@@ -206,14 +206,14 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
       const matchingOrder = sellOrders.find(o => JSON.parse(o).stock_tx_id === stock_tx_id);
 
       if (matchingOrder) {
-        await redisClient.zrem(redisKey, matchingOrder);
+        await redisClient.zRem(redisKey, matchingOrder);
         console.log(`Removed SELL order ${stock_tx_id} from Redis.`);
       }
     }
 
     // Return stock to user
     await axios.post(
-      `${userManagementServiceUrl}/setup/addStockToUser`,
+      `${userManagementServiceUrl}/addStockToUser`,
       {
         stock_id: order.stock_id,
         quantity: order.quantity

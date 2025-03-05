@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const SERVICE_AUTH_TOKEN = process.env.SERVICE_AUTH_TOKEN;
+const SERVICE_AUTH_TOKEN = "supersecretauthtoken";
 
 module.exports = (req, res, next) => {
     const token = req.header('token');
