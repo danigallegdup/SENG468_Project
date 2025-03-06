@@ -156,11 +156,14 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         { score: price, value: JSON.stringify(newOrder) }
       ]);
       console.log(`Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`);
+      
+      // Clear cached data after an hour to avoid stale entries
+      await redisClient.expire(redisSellOrdersKey, 3600);
 
       // Update lowest price for stock
       const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
-        await redisClient.set(`market_price:${stock_id}`, price);
+        await redisClient.set(`market_price:${stock_id}`, price, { EX: 3600 });
         console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
 

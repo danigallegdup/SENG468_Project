@@ -21,8 +21,17 @@
 const Order = require("../models/Order");
 const UserHeldStock = require("../models/UserHeldStock");
 const Stock = require("../models/Stock");
+const redis = require("redis");
 
+// Connect to redis
+const REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
+const redisClient = redis.createClient({ url: REDIS_URL });
 
+redisClient.connect()
+  .then(() => console.log('✅ Connected to Redis'))
+  .catch(err => console.error('❌ Redis Connection Error:', err));
+
+// Exports
 exports.getStockTransactions = async (req, res) => {
   try {
     console.log("controllers/stockTransactionController.js: Fetching stock transactions...");
@@ -104,36 +113,56 @@ exports.getStockPortfolio = async (req, res) => {
   }
 };
 
+// getStockNames: Maps stockIds to stock names
+// Helper function for getStockPrices
+const getStockNames = async (stockIds) => {
+  if (!stockIds.length) return {};
+
+  try {
+    const stocks = await Stock.find({ _id: { $in: stockIds } })
+                              .select("_id stock_name")
+                              .lean();
+
+    return stocks.reduce((map, stock) => {
+      map[stock._id.toString()] = stock.stock_name;
+      return map;
+    }, {});
+  } catch (error) {
+    console.error("❌ Error fetching stock names:", error);
+    return {};
+  }
+};
+
 exports.getStockPrices = async (req, res) => {
-      try {  
-          // Fetch all stocks from the 'stocks' collection
-          let stocks = await Stock
-              .find({})
-              .sort({ stock_name: -1 });
-  
-          // Iterate through stocks and fetch the lowest sell order price for each stock
-          for (let i = 0; i < stocks.length; i++) {
-            let stock = stocks[i];
-            console.log("Stock: ", stock);
-              const lowestSellOrder = await Order
-                .find({
-                  stock_id: stock._id.toString(),
-                  is_buy: false,
-                  order_status: "IN_PROGRESS",
-                })
-                .sort({ stock_price: 1 }) // Sort by price ascending
-                .limit(1);
-  
-              // Set the current price from the lowest sell order if available
-              stock.current_price = lowestSellOrder.length > 0 ? lowestSellOrder[0].stock_price : null;
-              await stock.save();
-              console.log("Stock after: ", stock);
-              stocks[i] = stock;
-          }
-  
-          res.status(200).json({ success: true, data: stocks });
-      } catch (error) {
-          console.error("Error fetching stock prices:", error);
-          res.status(500).json({ success: false, message: "Internal Server Error" });
+  try {
+    const keys = await redisClient.keys('market_price:*');
+    if (!keys.length) {
+      return res.json({ success: true, data: [] }); // Return empty array
+    }
+
+    const stockIds = keys.map(key => key.split(':')[1]);
+    const stockMap = await getStockNames(stockIds);
+    const prices = [];
+
+    for (const key of keys) {
+      const stock_id = key.split(':')[1];
+      const stock_name = stockMap[stock_id];
+
+      // Delete stale stocks from cache
+      if (!stock_name) {
+        await redisClient.del(key);
+        continue;
       }
+
+      const price = await redisClient.get(key);
+      if (price !== null) {
+        prices.push({ stock_id, stock_name, current_price: price });
+      }
+    }
+
+    res.json({ success: true, data: prices });
+  } catch (error) {
+    console.error('❌ Error fetching stock prices:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
 };
