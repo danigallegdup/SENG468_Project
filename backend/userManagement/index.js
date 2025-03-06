@@ -111,13 +111,15 @@ app.post('/addStockToUser', authMiddleware, async (req, res) => {
   }
 });
 
+
+// /addMoneyToWallet is already defined in transaction service
 /**
  * ----------------------------------------------------------------
  * POST /addMoneyToWallet
  * Add a balance to a wallet
  * ----------------------------------------------------------------
  */
-app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
+/*app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
     try {
         const { amount } = req.body;
         if (!amount || amount <= 0) {
@@ -144,7 +146,7 @@ app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
         console.error("Error adding money to wallet:", err);
         return res.status(500).json({ success: false, message: "Server error" });
     }
-});
+});*/
 
 // Start server
 const PORT = process.env.USERMANAGEMENT_SERVICE_PORT || 3003;

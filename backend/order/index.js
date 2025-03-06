@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
  */
 app.post("/placeStockOrder", authMiddleware, async (req, res) => {
   try {
-    console.log("Order request received for user:", req.user.id);
+    console.log("Order request received from user:", req.user.id);
     let { stock_id, is_buy, order_type, quantity, price } = req.body;
 
     // Check if required fields are defined
@@ -113,18 +113,20 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         return res.status(200).json({success: true, data: null});
       } else {
         // refund user and return appropriate response
-        console.log('Order not matched. Refunding user.');
+        console.log('Order not matched. Refunding user: ', newOrder.user_id);
         await axios.post(
           `${transactionServiceUrl}/updateWallet`,
           {
+            user_id: newOrder.user_id,
             amount: newOrder.stock_price * newOrder.quantity,
-            order_status: newOrder.order_status,
-            is_buy: is_buy,
+            is_buy: newOrder.is_buy,
             stock_tx_id: newOrder.stock_tx_id,
             wallet_tx_id: newOrder.wallet_tx_id,
           },
           { headers: { token: req.headers.token } }
         );
+
+        console.log("Refunded user $",newOrder.stock_price * newOrder.quantity);
 
         return res.status(200).json({success: false, data: 'error: '});
       }
@@ -133,25 +135,6 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
     else {
       // Attempt to deduct stocks from user's portfolio
       console.log('Processing SELL/LIMIT order:', newOrder);
-      // const portfolioResponse = await axios.post(
-      //   `${transactionServiceUrl}/updateWallet`,
-      //   {
-      //     amount: newOrder.stock_price * newOrder.quantity,
-      //     order_status: newOrder.order_status,
-      //     is_buy: is_buy,
-      //     stock_tx_id: newOrder.stock_tx_id,
-      //     wallet_tx_id: newOrder.wallet_tx_id,
-      //   },
-      //   {
-      //     headers: {
-      //       token: req.headers.token, // Pass the authorization header
-      //     },
-      //   }
-      // );
-
-      // if (!portfolioResponse.data.success) {
-      //   return res.status(400).json({success: false, message: 'Insufficient stocks to place order.'});
-      // }
 
       // Add order to database
       await newOrder.save();
@@ -178,7 +161,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       {
         user_id: newOrder.user_id,
         stock_id: newOrder.stock_id,
-        quantity: newOrder.quantity, // Adjust quantity based on buy/sell
+        quantity: -newOrder.quantity, // Adjust quantity based on buy/sell
         is_buy: is_buy,
       },
       {

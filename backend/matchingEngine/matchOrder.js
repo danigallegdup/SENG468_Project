@@ -26,6 +26,8 @@ async function matchOrder(newOrder) {
       return { matched: false, expense: 0 };
     }
 
+    console.log(`✅ Order received by matchOrder:`, newOrder);
+
     // Get Market Price from Reddit variable
     let marketPrice = await redisClient.get(`market_price:${newOrder.stock_id}`);
 
@@ -38,6 +40,7 @@ async function matchOrder(newOrder) {
     totalCost = marketPrice*newOrder.quantity;
 
     console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
+    console.log("newOrder.user_id: ",newOrder.user_id);
 
     // Subtract money from user's wallet
     const walletResponse = await updateWallet(
@@ -92,7 +95,7 @@ async function matchOrder(newOrder) {
         stock_price: sellOrder.stock_price, 
         order_status: 'COMPLETED',
         created_at: new Date(),
-        stock_tx_id: `tx_${Date.now()}`,
+        stock_tx_id: uuidv4(),
         parent_stock_tx_id: sellOrder.stock_tx_id,
         wallet_tx_id: null,
       });

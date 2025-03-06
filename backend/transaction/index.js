@@ -35,7 +35,7 @@ app.post(
   "/addMoneyToWallet",
   authMiddleware,
   walletController.addMoneyToWallet
-);
+)
 
 app.post("/updateWallet", authMiddleware, walletController.updateWallet);
 app.post("/updateStockPortfolio", authMiddleware, stockController.updateStockPortfolio);

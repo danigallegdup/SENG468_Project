@@ -37,7 +37,7 @@ exports.getWalletTransactions = async (req, res) => {
 };
 
 exports.addMoneyToWallet = async (req, res) => {
-    try {/*
+    try {
         const { amount } = req.body;
         if (!amount || amount <= 0) {
             return res.status(400).json({
@@ -58,7 +58,7 @@ exports.addMoneyToWallet = async (req, res) => {
             timeStamp: new Date() // Set the actual timestamp when the transaction is made.
         });
         await newTransaction.save();
-        return res.json({ success: true, data: null });*/
+        return res.json({ success: true, data: null });
     } catch (err) {
         console.error("Error adding money to wallet:", err);
         return res.status(500).json({ success: false, message: "Server error" });
@@ -76,7 +76,8 @@ exports.updateWallet = async (req, res) => {
             });
         }
   
-        console.log("Updating wallet...");
+        console.log("Updating the wallet of user ", user_id);
+        console.log("Updating wallet for stock_tx_id ", stock_tx_id);
         // Get the current balance from the most recent transaction using the actual timestamp.
         const lastTransaction = await Wallet.findOne({ userId: user_id })
             .sort({ timeStamp: 'desc' })
