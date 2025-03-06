@@ -9,8 +9,8 @@ const redisClient = require("./redis");
 const axios = require('axios');
 require('dotenv').config();
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";
-const userManagementServiceUrl = "http://usermanagement-service:3003";
-const transactionServiceUrl = "http://transaction-service:3004";
+const userManagementServiceUrl = "http://api-gateway:8080/setup";
+const transactionServiceUrl = "http://api-gateway:8080/transaction";
 const { v4: uuidv4 } = require("uuid"); 
 
 
