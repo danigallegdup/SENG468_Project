@@ -42,14 +42,18 @@ async function matchOrder(newOrder) {
     console.log(`🔍 Debug: totalCost before sending =`, totalCost, typeof totalCost);
     console.log("newOrder.user_id: ",newOrder.user_id);
 
+    const new_wallet_tx_id = uuidv4();
+
     // Subtract money from user's wallet
     const walletResponse = await updateWallet(
       newOrder.user_id, 
       totalCost, 
       true,
       newOrder.stock_tx_id,
-      uuidv4()
+      new_wallet_tx_id
     );
+
+    console.log("walletResponse: ", walletResponse);
 
     // Return failure if insufficient funds
     if (!walletResponse || !walletResponse.success) {
@@ -61,6 +65,8 @@ async function matchOrder(newOrder) {
       `sell_orders:${newOrder.stock_id}`,
       0, 0, {rev: false}
     );
+
+    console.log("Lowest sell order: ", lowestSellOrder);
 
     // Check for a match
     if (!lowestSellOrder || !lowestSellOrder.length) {
@@ -97,7 +103,7 @@ async function matchOrder(newOrder) {
         created_at: new Date(),
         stock_tx_id: uuidv4(),
         parent_stock_tx_id: sellOrder.stock_tx_id,
-        wallet_tx_id: null,
+        wallet_tx_id: newOrder.wallet_tx_id,
       });
 
       // Add child to database
@@ -147,14 +153,16 @@ async function matchOrder(newOrder) {
     await updateStockPortfolio(newOrder.user_id, newOrder.stock_id, newOrder.quantity, newOrder.is_buy);
 
     // Update seller's wallet
-    await updateWallet(sellOrder.user_id, sellOrder.stock_price*newOrder.quantity, false);
+    await updateWallet(sellOrder.user_id, sellOrder.stock_price*newOrder.quantity, false, sellOrder.stock_tx_id, sellOrder.wallet_tx_id);
 
-    return { matched: true, expense: sellOrder.stock_price*newOrder.quantity };
+    console.log("sellOrder.stock_price: ", sellOrder.stock_price);
+    console.log("new_wallet_tx_id: ", new_wallet_tx_id);
+    return { matched: true, expense: sellOrder.stock_price*newOrder.quantity, stock_price: sellOrder.stock_price, wallet_tx_id: new_wallet_tx_id };
 
   } catch (error) {
     console.log("!! SERVICE_AUTH_TOKEN:", SERVICE_AUTH_TOKEN);
     console.error("❌ Error matching order:", error);
-    return { matched: false };
+    return { matched: false, expense: 0 };
   }
 }
 
@@ -178,7 +186,7 @@ async function updateWallet(user_id, amount, is_buy, stock_tx_id, wallet_tx_id) 
     const walletResponse = await axios.post(
       `${transactionServiceUrl}/updateWallet`,
       { 
-        userId: user_id, 
+        user_id, 
         amount, 
         is_buy, 
         stock_tx_id, 
@@ -213,20 +221,27 @@ async function updateWallet(user_id, amount, is_buy, stock_tx_id, wallet_tx_id) 
 /**
  * Updates stock portfolio using API
  */
-async function updateStockPortfolio(user_id, stock_id, quantity) {
+async function updateStockPortfolio(user_id, stock_id, quantity, is_buy) {
   try {
     console.log("🔍 Sending Stock Portfolio Update Request:", {
       user_id: user_id,
       stock_id: stock_id,
-      quantity: quantity
+      quantity: quantity,
+      is_buy: is_buy
     });
 
     const portfolioResponse = await axios.post(
-      `${transactionServiceUrl}/addStockToUser`,
+      `${transactionServiceUrl}/updateStockPortfolio`,
       {
-        stock_id,
-        quantity,
-        user_id
+        user_id: user_id,
+        stock_id: stock_id,
+        quantity: quantity,
+        is_buy: is_buy
+      },
+      {
+        headers: {
+          "token": SERVICE_AUTH_TOKEN
+        },
       }
     );
 

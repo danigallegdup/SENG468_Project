@@ -11,7 +11,6 @@ const { v4: uuidv4 } = require("uuid");
 const authMiddleware = require('../middleware/authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
-const { connectRabbitMQ } = require("./rabbitmq"); // Import/start RabbitMQ
 const { waitForOrderResponse } = require("./orderResponseConsumer");
 
 const transactionServiceUrl = "http://api-gateway:8080/transaction";
@@ -22,7 +21,6 @@ app.use(cors());
 app.use(express.json());
 
 connectDB();
-//connectRabbitMQ();
 
 // Health-check route
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -81,21 +79,23 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
     const newOrder = new Order({
       user_id: req.user.id, // from authMiddleware
       stock_id,
-      stock_tx_id: uuidv4(),
       is_buy,
       order_type,
       quantity,
       stock_price: is_buy ? null : price, // BUY/MARKET has no price
       order_status: "IN_PROGRESS",
       created_at: new Date(),
+      stock_tx_id: uuidv4(),
       parent_stock_tx_id: null,
       wallet_tx_id: null
     });
-
+    
     // Process order
     // If it's Buy/Market, deduct from the user's wallet and send to RabbitMQ for fulfillment by the matching engine
     // If it's Sell/Limit, add it to its respective redis set
     if (is_buy) {
+
+      await newOrder.save();
 
       // Publish order to RabbitMQ
       publishOrder(newOrder);
@@ -110,18 +110,29 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
 
       // Handle Order Response
       if (response.matched) {
+
+        console.log("response.stock_price: ", response.stock_price);
+        console.log("response.wallet_tx_id: ", response.wallet_tx_id);
+
+        await Order.updateOne(
+          { stock_tx_id: newOrder.stock_tx_id },
+          { 
+            $set: { 
+              order_status: "COMPLETED",
+              stock_price: response.stock_price,
+              wallet_tx_id: response.wallet_tx_id
+            }
+          }
+        );
+
         return res.status(200).json({success: true, data: null});
       } else {
         // refund user and return appropriate response
         console.log('Order not matched. Refunding user: ', newOrder.user_id);
         await axios.post(
-          `${transactionServiceUrl}/updateWallet`,
+          `${transactionServiceUrl}/addMoneyToWallet`,
           {
-            user_id: newOrder.user_id,
-            amount: newOrder.stock_price * newOrder.quantity,
-            is_buy: newOrder.is_buy,
-            stock_tx_id: newOrder.stock_tx_id,
-            wallet_tx_id: newOrder.wallet_tx_id,
+            amount: newOrder.stock_price * newOrder.quantity
           },
           { headers: { token: req.headers.token } }
         );
@@ -131,11 +142,11 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         return res.status(200).json({success: false, data: 'error: '});
       }
 
-    } 
-    else {
+    } else {
       // Attempt to deduct stocks from user's portfolio
+      
       console.log('Processing SELL/LIMIT order:', newOrder);
-
+      
       // Add order to database
       await newOrder.save();
 
@@ -153,23 +164,31 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
         console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
 
+      console.log("Updating user's portfolio for sell order");
+      console.log("user_id: ", newOrder.user_id);
+      console.log("stock_id: ", newOrder.stock_id);
+      console.log("quantity: ", newOrder.quantity);
+      console.log("is_buy: ", is_buy);
+
+
+      await axios.post(
+        `${transactionServiceUrl}/updateStockPortfolio`,
+        {
+          user_id: newOrder.user_id,
+          stock_id: newOrder.stock_id,
+          quantity: newOrder.quantity,
+          is_buy: is_buy
+        },
+        {
+          headers: {
+            token: req.headers.token, // Pass the authorization header
+          },
+        }
+      );
+
     }
 
     console.log("Order placed successfully:", newOrder);
-    await axios.post(
-      `${transactionServiceUrl}/updateStockPortfolio`,
-      {
-        user_id: newOrder.user_id,
-        stock_id: newOrder.stock_id,
-        quantity: -newOrder.quantity, // Adjust quantity based on buy/sell
-        is_buy: is_buy,
-      },
-      {
-        headers: {
-          token: req.headers.token, // Pass the authorization header
-        },
-      }
-    );
     // Return order confirmation
     res.json({ success: true, data: newOrder });
 
@@ -229,7 +248,7 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
       },
       {
         headers: {
-          token: req.headers.token, // Pass the authorization header
+          token: req.headers.token // Pass the authorization header
         },
       }
     );

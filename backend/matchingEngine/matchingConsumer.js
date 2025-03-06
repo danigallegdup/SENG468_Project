@@ -42,13 +42,20 @@ async function consumeOrders() {
                     const response = {
                         stock_tx_id: order.stock_tx_id,
                         matched: matchResult.matched,
-                        expense: matchResult.expense
+                        expense: matchResult.expense,
+                        stock_price: matchResult.stock_price,
+                        wallet_tx_id: matchResult.wallet_tx_id
                     };
+
+                    console.log("Matching Consumer Response: ", response);
 
                     channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });
                     console.log(`📤 Sent order response for ${order.stock_tx_id}: ${response.matched ? 'Matched' : 'Not Matched'}`);
 
                     channel.ack(msg); // ✅ Acknowledge message on success
+
+                    console.log("matchingConsumer response: ", response);
+                    return response;
 
                 } catch (error) {
                     console.error("❌ Error processing order:", error);

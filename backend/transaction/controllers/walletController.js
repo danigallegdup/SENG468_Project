@@ -75,6 +75,13 @@ exports.updateWallet = async (req, res) => {
                 data: { error: "is_buy flag is required" }
             });
         }
+
+        if (typeof user_id === 'undefined') {
+            return res.status(400).json({
+                success: false,
+                data: { error: "No user idea provided to updateWallet" }
+            });
+        }
   
         console.log("Updating the wallet of user ", user_id);
         console.log("Updating wallet for stock_tx_id ", stock_tx_id);
