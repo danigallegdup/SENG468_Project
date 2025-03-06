@@ -217,8 +217,10 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    console.log("order.order_status: ",order.order_status);
+
     // Check order is in progress
-    if (order.order_status !== 'IN_PROGRESS') {
+    if (order.order_status == 'COMPLETED' || order.order_status == 'CANCELLED') {
       return res.status(400).json({
         success: false,
         message: 'Cannot cancel a completed or already canceled order',

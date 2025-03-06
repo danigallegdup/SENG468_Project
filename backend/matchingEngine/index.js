@@ -46,7 +46,7 @@ app.get('/getStockPrices', async (req, res) => {
 });
 
 // 📌 **Start Matching Engine**
-const PORT = process.env.MATCHING_ENGINE_PORT || 3003;
+const PORT = process.env.MATCHING_ENGINE_PORT || 3006;
 app.listen(PORT, () => {
   console.log(`🚀 Matching Engine running on port ${PORT}`);
 });

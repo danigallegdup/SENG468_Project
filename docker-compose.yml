@@ -141,6 +141,8 @@ services:
     networks:
       - backend-network
   matching-engine:
+    ports:
+      - "3006:3006"
     build:
       context: ./backend/matchingEngine
     container_name: matching-engine
