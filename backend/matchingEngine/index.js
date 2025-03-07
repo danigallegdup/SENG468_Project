@@ -27,24 +27,6 @@ redisClient.connect()
 // Start RabbitMQ consumer to process orders asynchronously
 consumeOrders().catch(console.error);
 
-// **GET /getStockPrices** - Retrieve latest stock prices from Redis
-app.get('/getStockPrices', async (req, res) => {
-  try {
-    const keys = await redisClient.keys('lowest_price:*');
-    const prices = {};
-
-    for (const key of keys) {
-      const stock_id = key.split(':')[1];
-      prices[stock_id] = await redisClient.get(key);
-    }
-
-    res.json({ success: true, data: prices });
-  } catch (error) {
-    console.error('❌ Error fetching stock prices:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
 // 📌 **Start Matching Engine**
 const PORT = process.env.MATCHING_ENGINE_PORT || 3006;
 app.listen(PORT, () => {

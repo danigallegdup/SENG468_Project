@@ -110,6 +110,9 @@ exports.updateWallet = async (req, res) => {
             transactionType = "deposit";
             isDebit = false;
         }
+
+        lastTransaction.balance = newBalance;
+        await lastTransaction.save();
   
         const newTransaction = new WalletTransaction({
             userId: user_id,
@@ -121,7 +124,10 @@ exports.updateWallet = async (req, res) => {
             wallet_tx_id,
             timeStamp: new Date() // Actual timestamp when the transaction is made.
         });
+
         console.log("New balance: ", newBalance);
+        console.log("Saving newTransaction to database: ", newTransaction);
+
         await newTransaction.save();
         return res.json({ success: true, data: null });
     } catch (err) {
