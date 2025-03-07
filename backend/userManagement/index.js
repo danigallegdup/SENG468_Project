@@ -9,7 +9,7 @@ const Stock = require('./Stock');
 const UserHeldStock = require('./UserHeldStock');
 const Wallet = require('./Wallet');
 const WalletTransaction = require('./WalletTransaction');
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('./authMiddleware');
 
 
 const app = express();

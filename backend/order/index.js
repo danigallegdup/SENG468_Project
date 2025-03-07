@@ -8,7 +8,7 @@ const connectDB = require('./db');
 const Order = require('./Order');
 const { v4: uuidv4 } = require("uuid");
 
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('./authMiddleware');
 
 const app = express();
 app.use(cors());
