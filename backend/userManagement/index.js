@@ -7,10 +7,9 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const Stock = require('./Stock');
 const UserHeldStock = require('./UserHeldStock');
-const Wallet = require('./Wallet');
-const WalletTransaction = require('./WalletTransaction');
 const authMiddleware = require('./authMiddleware');
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
+const { v4: uuidv4 } = require("uuid");
 
 const redisClient = require("./redis");
 
@@ -44,14 +43,17 @@ app.post('/createStock', authMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Stock name is required' });
     }
 
-    const stockExists = await Stock.findOne({ stock_name });
+    // Check redis cache to check if stock exists instead of hitting db
+    const stockExists = await redisClient.get(`stock:${stock_name}`);
     if (stockExists) {
       return res.status(409).json({ success: false, message: 'Stock already exists' });
     }
 
     const newStock = new Stock({ stock_name, current_price: 0 });
-    newStock.stock_id = newStock._id;
     await newStock.save();
+
+    // Store the stock name in redis as a simple key value pair. This ensures duplicate stock names can't exist
+    await redisClient.set(`stock:${stock_name}`, newStock._id);
 
     res.json({ success: true, data: { stock_id: newStock._id } });
   } catch (error) {
