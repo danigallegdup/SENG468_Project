@@ -111,6 +111,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       // Handle Order Response
       if (response.matched) {
 
+        console.log("response: ", response);
         console.log("response.stock_price: ", response.stock_price);
         console.log("response.wallet_tx_id: ", response.wallet_tx_id);
 
@@ -160,10 +161,15 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       // Clear cached data after an hour to avoid stale entries
       await redisClient.expire(redisSellOrdersKey, 3600);
 
+      const timestamp = Date.now();
+      console.log("Generated timestamp: ", timestamp);
+      console.log("stock_id: ", stock_id);
+
       // Update lowest price for stock
       const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
-        await redisClient.set(`market_price:${stock_id}`, price, { EX: 3600 });
+        await redisClient.set(`market_price:${stock_id}`, price, { EX: 3600 });   // set market price redis variable for stock
+        await redisClient.zAdd('market_price_ordered', [{score: timestamp, value: stock_id}]);      // add to list of ordered market prices for getStockPrices
         console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
 

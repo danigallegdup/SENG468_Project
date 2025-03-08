@@ -56,47 +56,80 @@ exports.getStockTransactions = async (req, res) => {
 
 exports.updateStockPortfolio = async (req, res) => {
   try {
+
     const {user_id, stock_id, quantity, is_buy} = req.body;
-    console.log("user id: ", user_id);
-    console.log("stock id", stock_id);
-    console.log("quantity", quantity);
-    console.log("is buy", is_buy);
+
+    if (is_buy) {
+      console.log("Fulfilling buy order with updateStockPortfolio");
+    }
+
+    console.log("> Updating stock portfolio... ");
+    console.log("> user id: ", user_id);
+    console.log("> stock id:", stock_id);
+    console.log("> quantity:", quantity);
+    console.log("> is buy:", is_buy);
+
     let userStock = await UserHeldStock.findOne({ user_id, stock_id });
     console.log("user stock: ", userStock);
+
     const stockName = await Stock
       .findById(stock_id)
       .select("stock_name");
     console.log("stock name: ", stockName);
+
     if (!userStock && !is_buy) {
       console.log("User stock not found");
       return res
         .status(404)
         .json({ success: false, data: { error: "User stock not found" } });
+
     } else if (!userStock && is_buy) {
-      console.log("User stock not found, creating new");
-      userStock = new UserHeldStock({
-        user_id: req.user.id,
-        stock_id,
-        stock_name: stockName.stock_name,
-        quantity_owned: 0,
-        updated_at: new Date(),
-      });
+      console.log("User stock not found, creating new for UserHeldStock for: ", stockName);
+      try {
+        userStock = new UserHeldStock({
+          user_id,
+          stock_id,
+          stock_name: stockName.stock_name,
+          quantity_owned: 0,
+          updated_at: new Date(),
+        });
+      } catch(err) {
+        console.log("Couldn't create new userStock object: ", err);
+      }
+
     }
+
+    console.log("> userStock: ", userStock);
+
     if (is_buy) {
-      console.log("buying stock");
+      console.log("updateStockPortfolio: buying stock");
       userStock.quantity_owned = userStock.quantity_owned + quantity;
+
     } else {
-      console.log("selling stock");
+      console.log("updateStockPortfolio: selling stock");
       userStock.quantity_owned = userStock.quantity_owned - quantity;
     }
+
     userStock.updated_at = new Date();
-    console.log("user stock: ", userStock);
+    console.log("updateStockPortfolio/user stock: ", userStock);
+
     if (userStock.quantity_owned <= 0) {
       await UserHeldStock.deleteOne({ _id: userStock._id });
       return res.json({ success: true, data: null });
     }
-    await userStock.save();
+
+    try {
+      await userStock.save();
+      console.log("Successfully updated stock portfolio.")
+    } catch (err) {
+      console.log("updateStockPortfolio couldn't save userStock to database.");
+      return res
+      .status(500)
+      .json({ success: false, data: { error: "Update stock portfolio failed: "+ err.message } });
+    }
+    
     return res.json({ success: true, data: null });
+
   } catch (err) {
     return res
       .status(500)
@@ -135,26 +168,31 @@ const getStockNames = async (stockIds) => {
 
 exports.getStockPrices = async (req, res) => {
   try {
-    const keys = await redisClient.keys('market_price:*');
-    if (!keys.length) {
-      return res.json({ success: true, data: [] }); // Return empty array
+    // Retrieve stock IDs in the correct order
+    const stockIds = await redisClient.zRange('market_price_ordered', 0, -1);
+
+    // Return empty data if no stocks
+    if (!stockIds.length) {
+      return res.json({ success: true, data: [] });
     }
 
-    const stockIds = keys.map(key => key.split(':')[1]);
+    // Fetch stock names
     const stockMap = await getStockNames(stockIds);
     const prices = [];
 
-    for (const key of keys) {
-      const stock_id = key.split(':')[1];
+    // Loop through each stock and fetch price
+    for (const stock_id of stockIds) {
       const stock_name = stockMap[stock_id];
 
-      // Delete stale stocks from cache
+      // Remove stale stocks from cache
       if (!stock_name) {
-        await redisClient.del(key);
+        await redisClient.zRem('market_price_ordered', stock_id);
+        await redisClient.del(`market_price:${stock_id}`);
         continue;
       }
 
-      const price = await redisClient.get(key);
+      // Fetch the stock price
+      const price = await redisClient.get(`market_price:${stock_id}`);
       if (price !== null) {
         prices.push({ stock_id, stock_name, current_price: price });
       }

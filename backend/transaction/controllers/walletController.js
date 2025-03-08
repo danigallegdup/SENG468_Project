@@ -111,8 +111,21 @@ exports.updateWallet = async (req, res) => {
             isDebit = false;
         }
 
-        lastTransaction.balance = newBalance;
-        await lastTransaction.save();
+        console.log("lastTransaction: ", lastTransaction);
+        console.log("newBalance: ", newBalance);
+        if (lastTransaction) {
+            lastTransaction.balance = newBalance;
+            await lastTransaction.save();
+        } else {
+            // Create a new wallet transaction for the user
+            const newWalletEntry = new Wallet({
+                userId: user_id,
+                balance: newBalance,
+                timeStamp: new Date()
+            });
+            await newWalletEntry.save();
+        }
+        
   
         const newTransaction = new WalletTransaction({
             userId: user_id,
