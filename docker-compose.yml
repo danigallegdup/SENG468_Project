@@ -112,6 +112,78 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  
+  auth-service-6:
+    build:
+      context: ./backend/auth
+    container_name: auth-service-6
+    ports:
+      - "30016:3001"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  auth-service-7:
+    build:
+      context: ./backend/auth
+    container_name: auth-service-7
+    ports:
+      - "30017:3001"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+  auth-service-8:
+    build:
+      context: ./backend/auth
+    container_name: auth-service-8
+    ports:
+      - "30018:3001"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  auth-service-9:
+    build:
+      context: ./backend/auth
+    container_name: auth-service-9
+    ports:
+      - "30019:3001"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     
 
   transaction-service-1:
@@ -436,6 +508,14 @@ services:
       auth-service-4:
         condition: service_healthy
       auth-service-5:
+        condition: service_healthy
+      auth-service-6:
+        condition: service_healthy
+      auth-service-7:
+        condition: service_healthy
+      auth-service-8:
+        condition: service_healthy
+      auth-service-9:
         condition: service_healthy
       transaction-service-1:
         condition: service_healthy
