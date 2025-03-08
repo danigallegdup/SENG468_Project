@@ -16,6 +16,7 @@ const orderSchema = {
   stock_tx_id: String,
   parent_stock_tx_id: String,
   wallet_tx_id: String,
+  token: String,
 };
 
 module.exports = mongoose.model("Order", orderSchema); // Export schema for use in MongoDB operations

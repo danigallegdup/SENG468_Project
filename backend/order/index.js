@@ -8,7 +8,7 @@ const connectDB = require('./db');
 const Order = require('./Order');
 const { v4: uuidv4 } = require("uuid");
 
-const authMiddleware = require('../middleware/authMiddleware'); // Import authMiddleware
+const authMiddleware = require('./authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
 const { waitForOrderResponse } = require("./orderResponseConsumer");
@@ -43,6 +43,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
   try {
     console.log("Order request received from user:", req.user.id);
     let { stock_id, is_buy, order_type, quantity, price } = req.body;
+    let token = req.headers.token;
 
     // Check if required fields are defined
     if (!stock_id || typeof is_buy === 'undefined' || !order_type || !quantity) {
@@ -87,7 +88,8 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       created_at: new Date(),
       stock_tx_id: uuidv4(),
       parent_stock_tx_id: null,
-      wallet_tx_id: null
+      wallet_tx_id: null,
+      token
     });
     
     // Process order

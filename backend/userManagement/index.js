@@ -9,7 +9,7 @@ const Stock = require('./Stock');
 const UserHeldStock = require('./UserHeldStock');
 const Wallet = require('./Wallet');
 const WalletTransaction = require('./WalletTransaction');
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('./authMiddleware');
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
 
 
@@ -24,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // Health-check route
+app.get("/health", (req, res) => res.status(200).send("OK"));
 app.get('/', (req, res) => {
   res.send('✅ User Management Service is running!');
 });

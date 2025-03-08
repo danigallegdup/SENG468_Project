@@ -8,7 +8,7 @@ const Order = require("./Order");
 const redisClient = require("./redis");
 const axios = require('axios');
 require('dotenv').config();
-const SERVICE_AUTH_TOKEN = "supersecretauthtoken";
+let SERVICE_AUTH_TOKEN = "supersecretauthtoken";
 const userManagementServiceUrl = "http://api-gateway:8080/setup";
 const transactionServiceUrl = "http://api-gateway:8080/transaction";
 const { v4: uuidv4 } = require("uuid"); 
@@ -27,7 +27,7 @@ async function matchOrder(newOrder) {
     }
 
     console.log(`✅ Order received by matchOrder:`, newOrder);
-
+    SERVICE_AUTH_TOKEN = newOrder.token;
     // Get Market Price from Reddit variable
     let marketPrice = await redisClient.get(`market_price:${newOrder.stock_id}`);
 
@@ -104,6 +104,7 @@ async function matchOrder(newOrder) {
         stock_tx_id: uuidv4(),
         parent_stock_tx_id: sellOrder.stock_tx_id,
         wallet_tx_id: newOrder.wallet_tx_id,
+        token: newOrder.token
       });
 
       // Add child to database
