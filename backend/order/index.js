@@ -41,9 +41,13 @@ app.get('/', (req, res) => {
  */
 app.post("/placeStockOrder", authMiddleware, async (req, res) => {
   try {
-    console.log("Order request received from user:", req.user.id);
+
     let { stock_id, is_buy, order_type, quantity, price } = req.body;
     let token = req.headers.token;
+
+    console.log("✅ Received POST /placeStockOrder request from user ",req.user.id);
+    console.log("Request body:", req.body);
+    console.log("Request headers:", req.headers);
 
     // Check if required fields are defined
     if (!stock_id || typeof is_buy === 'undefined' || !order_type || !quantity) {
@@ -76,6 +80,8 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       });
     }
 
+    console.log("Making order object");
+
     // Make Order Object
     const newOrder = new Order({
       user_id: req.user.id, // from authMiddleware
@@ -91,6 +97,8 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       wallet_tx_id: null,
       token
     });
+
+    console.log("newOrder: ", newOrder);
     
     // Process order
     // If it's Buy/Market, deduct from the user's wallet and send to RabbitMQ for fulfillment by the matching engine
@@ -155,9 +163,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
 
       // Add order to Redis sorted set
       redisSellOrdersKey = `sell_orders:${stock_id}`;
-      await redisClient.zAdd(redisSellOrdersKey, [
-        { score: price, value: JSON.stringify(newOrder) }
-      ]);
+      await redisClient.zadd(redisSellOrdersKey, price, JSON.stringify(newOrder));
       console.log(`Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`);
       
       // Clear cached data after an hour to avoid stale entries
@@ -170,8 +176,8 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       // Update lowest price for stock
       const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
-        await redisClient.set(`market_price:${stock_id}`, price, { EX: 3600 });   // set market price redis variable for stock
-        await redisClient.zAdd('market_price_ordered', [{score: timestamp, value: stock_id}]);      // add to list of ordered market prices for getStockPrices
+        await redisClient.set(`market_price:${stock_id}`, price, "EX", 3600);   // set market price redis variable for stock
+        await redisClient.zadd('market_price_ordered', timestamp, stock_id);    // add to list of ordered market prices for getStockPrices
         console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
 
@@ -243,11 +249,11 @@ app.post('/cancelStockTransaction', authMiddleware, async (req, res) => {
       const redisKey = `sell_orders:${order.stock_id}`;
       
       // Retrieve full sorted set entry
-      const sellOrders = await redisClient.zRange(redisKey, 0, -1);
+      const sellOrders = await redisClient.zrange(redisKey, 0, -1);
       const matchingOrder = sellOrders.find(o => JSON.parse(o).stock_tx_id === stock_tx_id);
 
       if (matchingOrder) {
-        await redisClient.zRem(redisKey, matchingOrder);
+        await redisClient.zrem(redisKey, matchingOrder);
         console.log(`Removed SELL order ${stock_tx_id} from Redis.`);
       }
     }

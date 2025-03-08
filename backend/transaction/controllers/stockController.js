@@ -21,15 +21,7 @@
 const Order = require("../models/Order");
 const UserHeldStock = require("../models/UserHeldStock");
 const Stock = require("../models/Stock");
-const redis = require("redis");
-
-// Connect to redis
-const REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
-const redisClient = redis.createClient({ url: REDIS_URL });
-
-redisClient.connect()
-  .then(() => console.log('✅ Connected to Redis'))
-  .catch(err => console.error('❌ Redis Connection Error:', err));
+const redisClient = require("./redis");
 
 // Exports
 exports.getStockTransactions = async (req, res) => {
@@ -152,24 +144,44 @@ const getStockNames = async (stockIds) => {
   if (!stockIds.length) return {};
 
   try {
-    const stocks = await Stock.find({ _id: { $in: stockIds } })
-                              .select("_id stock_name")
-                              .lean();
+    const stockMap = {};  // Stores final stock name mappings
+    const missingStockIds = [];  // Tracks stock IDs not found in cache
 
-    return stocks.reduce((map, stock) => {
-      map[stock._id.toString()] = stock.stock_name;
-      return map;
-    }, {});
+    // Attempt to fetch stock names from Redis
+    for (const stock_id of stockIds) {
+      const cachedStockName = await redisClient.get(`stock_name:${stock_id}`);
+      if (cachedStockName) {
+        stockMap[stock_id] = cachedStockName;  // Use cached value
+      } else {
+        missingStockIds.push(stock_id);  // Mark as missing in cache
+      }
+    }
+
+    // Fetch missing stock names from the database (only for uncached stocks)
+    if (missingStockIds.length > 0) {
+      const stocks = await Stock.find({ _id: { $in: missingStockIds } })
+        .select("_id stock_name")
+        .lean();
+
+      // Store fetched stock names in Redis and in stockMap
+      for (const stock of stocks) {
+        stockMap[stock._id.toString()] = stock.stock_name;
+        await redisClient.set(`stock_name:${stock._id}`, stock.stock_name, "EX", 3600);  // Cache for 1 hour
+      }
+    }
+
+    return stockMap;
   } catch (error) {
     console.error("❌ Error fetching stock names:", error);
     return {};
   }
 };
 
+
 exports.getStockPrices = async (req, res) => {
   try {
     // Retrieve stock IDs in the correct order
-    const stockIds = await redisClient.zRange('market_price_ordered', 0, -1);
+    const stockIds = await redisClient.zrange('market_price_ordered', 0, -1);
 
     // Return empty data if no stocks
     if (!stockIds.length) {
@@ -186,14 +198,16 @@ exports.getStockPrices = async (req, res) => {
 
       // Remove stale stocks from cache
       if (!stock_name) {
-        await redisClient.zRem('market_price_ordered', stock_id);
-        await redisClient.del(`market_price:${stock_id}`);
+        await redisClient.multi()
+        .zrem('market_price_ordered', stock_id)
+        .del(`market_price:${stock_id}`)
+        .exec();
         continue;
       }
 
       // Fetch the stock price
-      const price = await redisClient.get(`market_price:${stock_id}`);
-      if (price !== null) {
+      const price = parseFloat(await redisClient.get(`market_price:${stock_id}`));
+      if (!isNaN(price)) {
         prices.push({ stock_id, stock_name, current_price: price });
       }
     }

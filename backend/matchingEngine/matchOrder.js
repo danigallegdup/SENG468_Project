@@ -61,9 +61,10 @@ async function matchOrder(newOrder) {
     }
     
     // Find the lowest available SELL/LIMIT order
-    const lowestSellOrder = await redisClient.zRangeWithScores(
+    const lowestSellOrder = await redisClient.zrange(
       `sell_orders:${newOrder.stock_id}`,
-      0, 0, {rev: false}
+      0, 0,
+      "WITHSCORES"
     );
 
     console.log("Lowest sell order: ", lowestSellOrder);
@@ -75,7 +76,7 @@ async function matchOrder(newOrder) {
     }
 
     // Match is found
-    let sellOrder = JSON.parse(lowestSellOrder[0].value);
+    let sellOrder = JSON.parse(lowestSellOrder[0]);
 
     // Check BUY order can be fulfilled by market price order
     if (sellOrder.quantity < newOrder.quantity) {
@@ -123,18 +124,19 @@ async function matchOrder(newOrder) {
       );
 
       // Remove parent order from redis set
-      await redisClient.zRem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0].value);
+      await redisClient.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
 
       // Re-add partially-filled parent order to redis set
       sellOrder.quantity = remainingQuantity,
-      await redisClient.zAdd(`sell_orders:${newOrder.stock_id}`, {
-        score: sellOrder.stock_price,
-        value: JSON.stringify(sellOrder)
-      });
+      await redisClient.zadd(
+        `sell_orders:${newOrder.stock_id}`,
+        sellOrder.stock_price,
+        JSON.stringify(sellOrder)
+      );
 
     } else {
     // If the sell order is fully fulfilled, process it as 'COMPLETED'
-      await redisClient.zRem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0].value); // Remove from redis set
+      await redisClient.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]); // Remove from redis set
 
       // Update order object
       await Order.updateOne(
