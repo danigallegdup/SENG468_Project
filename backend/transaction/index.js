@@ -35,7 +35,7 @@ app.post(
   "/addMoneyToWallet",
   authMiddleware,
   walletController.addMoneyToWallet
-);
+)
 
 app.post("/updateWallet", authMiddleware, walletController.updateWallet);
 app.post("/updateStockPortfolio", authMiddleware, stockController.updateStockPortfolio);
@@ -58,6 +58,7 @@ app.get('/getStockPortfolio', authMiddleware, stockController.getStockPortfolio)
 app.get("/getStockPrices", authMiddleware, stockController.getStockPrices);
 
 // Health Check
+app.get('/health', (req, res) => res.status(200).send('OK'));
 app.get("/", (req, res) => {
   res.send("🚀 Transaction-Service/index.js: Transaction Service is running...");
 });

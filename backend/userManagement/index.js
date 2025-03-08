@@ -10,6 +10,7 @@ const UserHeldStock = require('./UserHeldStock');
 const Wallet = require('./Wallet');
 const WalletTransaction = require('./WalletTransaction');
 const authMiddleware = require('./authMiddleware');
+const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
 
 
 const app = express();
@@ -23,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // Health-check route
+app.get("/health", (req, res) => res.status(200).send("OK"));
 app.get('/', (req, res) => {
   res.send('✅ User Management Service is running!');
 });
@@ -110,13 +112,15 @@ app.post('/addStockToUser', authMiddleware, async (req, res) => {
   }
 });
 
+
+// /addMoneyToWallet is already defined in transaction service
 /**
  * ----------------------------------------------------------------
  * POST /addMoneyToWallet
  * Add a balance to a wallet
  * ----------------------------------------------------------------
  */
-app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
+/*app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
     try {
         const { amount } = req.body;
         if (!amount || amount <= 0) {
@@ -143,8 +147,7 @@ app.post('/addMoneyToWallet', authMiddleware, async (req, res) => {
         console.error("Error adding money to wallet:", err);
         return res.status(500).json({ success: false, message: "Server error" });
     }
-});
-
+});*/
 
 // Start server
 const PORT = process.env.USERMANAGEMENT_SERVICE_PORT || 3003;

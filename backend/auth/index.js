@@ -22,6 +22,9 @@ app.use(express.json());
 dotenv.config();
 connectDB();
 
+// Health check
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 /**
  * @route   POST /api/auth/register
  * @desc    Register a new user
