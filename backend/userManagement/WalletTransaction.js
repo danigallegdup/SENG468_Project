@@ -4,7 +4,7 @@
 const mongoose = require('mongoose');
 
 const WalletTransactionSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: mongoose.Schema.Types.String, required: true },
     amount: { type: Number, required: true },
     type: { type: String, enum: ['deposit', 'withdrawal'], required: true },
     stock_tx_id: { type: String, default: null },

@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 
 const StockTransactionSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: mongoose.Schema.Types.String, required: true },
     stockId: { type: mongoose.Schema.Types.ObjectId, ref: 'Stock', required: true },
     walletTransactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'WalletTransaction', default: null },
     isBuy: { type: Boolean, required: true },
