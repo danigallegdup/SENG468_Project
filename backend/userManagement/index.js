@@ -12,6 +12,8 @@ const WalletTransaction = require('./WalletTransaction');
 const authMiddleware = require('./authMiddleware');
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
 
+const redisClient = require("./redis");
+
 
 const app = express();
 app.use(cors());
@@ -52,21 +54,6 @@ app.post('/createStock', authMiddleware, async (req, res) => {
     await newStock.save();
 
     res.json({ success: true, data: { stock_id: newStock._id } });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-/**
- * ----------------------------------------------------------------
- * GET /getStockPortfolio
- * Retrieve user's stock portfolio
- * ----------------------------------------------------------------
- */
-app.get('/getStockPortfolio', authMiddleware, async (req, res) => {
-  try {
-    const stocks = await UserHeldStock.find({ user_id: req.user.id });
-    res.json({ success: true, data: stocks });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
