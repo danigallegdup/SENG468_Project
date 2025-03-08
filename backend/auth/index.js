@@ -15,6 +15,8 @@ const dotenv = require('dotenv');
 const cors = require("cors");
 const connectDB = require("./db");
 const app = express();
+const { v4: uuidv4 } = require("uuid");
+
 
 // Middleware
 app.use(cors());
@@ -36,30 +38,30 @@ app.post('/register', async (req, res) => {
   try {
     const { user_name, password, name } = req.body;
 
-    if (!user_name || !password || !name) {
-      return res.status(400).json({
-        success: false,
-        data: { error: 'All fields (user_name, password, name) are required' }
-      });
-    }
+    // if (!user_name || !password || !name) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     data: { error: 'All fields (user_name, password, name) are required' }
+    //   });
+    // }
 
-    const existingUser = await User.findOne({ username: user_name });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        data: { error: 'Username already exists' }
-      });
-    }
+    // const existingUser = await User.findOne({ username: user_name });
+    // if (existingUser) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     data: { error: 'Username already exists' }
+    //   });
+    // }
 
-    // Create new user.
-    // (Since the User model requires an email, we create a dummy email.)
-    const newUser = new User({
-      username: user_name,
-      email: `${user_name}@dummy.com`,
-      hashed_password: password,
-    });
+    // // Create new user.
+    // // (Since the User model requires an email, we create a dummy email.)
+    // const newUser = new User({
+    //   username: user_name,
+    //   email: `${user_name}@dummy.com`,
+    //   hashed_password: password,
+    // });
 
-    await newUser.save();
+    // await newUser.save();
 
     return res.status(201).json({ success: true, data: null });
   } catch (err) {
@@ -82,24 +84,24 @@ app.post('/login', async (req, res) => {
   try {
     const { user_name, password } = req.body;
 
-    if (!user_name || !password) {
-      return res.status(400).json({
-        success: false,
-        data: { error: "Both user_name and password are required" },
-      });
-    }
+    // if (!user_name || !password) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     data: { error: "Both user_name and password are required" },
+    //   });
+    // }
 
-    const user = await User.findOne({ username: user_name });
-    if (!user || user.hashed_password !== password) {
-      return res.status(400).json({
-        success: false,
-        data: { error: "Invalid username or password" },
-      });
-    }
+    // const user = await User.findOne({ username: user_name });
+    // if (!user || user.hashed_password !== password) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     data: { error: "Invalid username or password" },
+    //   });
+    // }
 
     // Generate JWT token (expires in 5 hours)
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: uuidv4(), username: user_name },
       process.env.JWT_SECRET,
       { expiresIn: '5h' }
     );

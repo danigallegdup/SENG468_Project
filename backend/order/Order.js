@@ -5,7 +5,7 @@ const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 
 const orderSchema = {
-  user_id: ObjectId, // ID of the user placing the order
+  user_id: String, // ID of the user placing the order
   stock_id: String, // Stock symbol
   is_buy: Boolean, // Specifies if order is buy (True) or sell (False)
   order_type: String, // "MARKET" or "LIMIT"
