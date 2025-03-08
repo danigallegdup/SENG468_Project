@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "ioredis": "^5.6.0",
     "mongoose": "^8.11.0"
   }
 }

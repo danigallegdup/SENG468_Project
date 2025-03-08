@@ -177,6 +177,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
         await redisClient.set(`market_price:${stock_id}`, price, "EX", 3600);   // set market price redis variable for stock
+        await redisClient.zrem('market_price_ordered', stock_id);               // remove stale
         await redisClient.zadd('market_price_ordered', timestamp, stock_id);    // add to list of ordered market prices for getStockPrices
         console.log(`Updated market price for stock ${stock_id}: ${price}`);
       }
