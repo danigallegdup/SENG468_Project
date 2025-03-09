@@ -9,7 +9,6 @@ const Stock = require('./Stock');
 const UserHeldStock = require('./UserHeldStock');
 const authMiddleware = require('./authMiddleware');
 const SERVICE_AUTH_TOKEN = "supersecretauthtoken";  // process.env.SERVICE_AUTH_TOKEN isn't working
-const { v4: uuidv4 } = require("uuid");
 
 const redisClient = require("./redis");
 
@@ -49,6 +48,7 @@ app.post('/createStock', authMiddleware, async (req, res) => {
       return res.status(409).json({ success: false, message: 'Stock already exists' });
     }
 
+    // Create a new stock object
     const newStock = new Stock({ stock_name, current_price: 0 });
     await newStock.save();
 
@@ -75,11 +75,20 @@ app.post('/addStockToUser', authMiddleware, async (req, res) => {
   }
 
   try {
-    const stockExists = await Stock.findById(stock_id);
+    // First we check Redis for stock's existence
+    let stockExists = await redisClient.get(`stock:${stock_id}`);
     if (!stockExists) {
-      return res.status(404).json({ success: false, data: { error: "Stock not found" } });
+      // If not found, check the database
+      stockExists = await Stock.findById(stock_id);
+      if (!stockExists) {
+        return res.status(404).json({ success: false, data: { error: "Stock not found" } });
+      }
+
+      // If we've reached here, the stock was fond in the database but not the cache, so we add it here
+      await redisClient.set(`stock:${stock_id}`)
     }
 
+    //TODO: Update the remainder of this function to check redis before the database, and to insert the userheldstock into redis with the new quantity
     let userStock = await UserHeldStock.findOne({ user_id: req.user.id, stock_id });
     if (userStock) {
       userStock.quantity_owned = userStock.quantity_owned + quantity;
