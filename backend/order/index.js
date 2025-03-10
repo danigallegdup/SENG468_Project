@@ -12,6 +12,7 @@ const authMiddleware = require('./authMiddleware'); // Import authMiddleware
 const { publishOrder } = require("./matchingProducer"); // Import RabbitMQ producer
 const redisClient = require("./redis"); // Import Redis
 const { waitForOrderResponse } = require("./orderResponseConsumer");
+const { publishToStockPortfolio } = require("./publishToStockPortfolio");
 
 const transactionServiceUrl = "http://api-gateway:8080/transaction";
 const userManagementServiceUrl = "http://api-gateway:8080/setup";
@@ -51,6 +52,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
 
     // Check if required fields are defined
     if (!stock_id || typeof is_buy === 'undefined' || !order_type || !quantity) {
+      console.log("Missing required fields (stock_id, is_buy, order_type, quantity)");
       return res.status(400).json({
         success: false,
         message: 'Missing required fields (stock_id, is_buy, order_type, quantity)',
@@ -59,21 +61,24 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
 
     // Ensure MARKET/BUY or LIMIT/SELL
     if ((is_buy && order_type !== 'MARKET') || (!is_buy && order_type !== 'LIMIT')) {
+      console.log("Invalid order type (MARKET/BUY or LIMIT/SELL)");
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
     }
 
     // Validate Buy order input
-    if (is_buy && price !== undefined) {
-      return res.status(400).json({
-        success: false,
-        message: 'Market buy orders must not include a price.',
-      });
-    }
+    // if (is_buy && price !== undefined) {
+    //   console.log("Market buy orders must not include a price.");
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Market buy orders must not include a price.',
+    //   });
+    // }
     
     // Validate Sell order input
     if (!is_buy && (typeof price !== 'number' || price <= 0)) {
+      console.log("Sell limit orders must include a valid positive price.");
       return res.status(400).json({
         success: false,
         message: 'Sell limit orders must include a valid positive price.',
@@ -98,7 +103,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       token
     });
 
-    console.log("newOrder: ", newOrder);
+    console.log("In place stock order newOrder: ", newOrder);
     
     // Process order
     // If it's Buy/Market, deduct from the user's wallet and send to RabbitMQ for fulfillment by the matching engine
@@ -108,11 +113,14 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       await newOrder.save();
 
       // Publish order to RabbitMQ
+      console.log('In order service Sending MARKET/BUY order to RabbitMQ:', newOrder);
       publishOrder(newOrder);
-      console.log('Sent MARKET/BUY order to RabbitMQ:', newOrder);
+      console.log('In order service Sent MARKET/BUY order to RabbitMQ:', newOrder);
 
       // Get response from Order Response RabbitMQ Queue
+      console.log('In order service Waiting for order response:', newOrder.stock_tx_id);
       const response = await waitForOrderResponse(newOrder.stock_tx_id, 1000000);
+      console.log('In order service Received order response:', response);
 
       if (!response) {
         return res.status(500).json({ success: false, message: 'Order processing timeout' });
@@ -121,9 +129,15 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       // Handle Order Response
       if (response.matched) {
 
-        console.log("response: ", response);
-        console.log("response.stock_price: ", response.stock_price);
-        console.log("response.wallet_tx_id: ", response.wallet_tx_id);
+        console.log("In order service response matched: ", response);
+        console.log(
+          "In order service response.stock_price: ",
+          response.stock_price
+        );
+        console.log(
+          "In order service response.wallet_tx_id: ",
+          response.wallet_tx_id
+        );
 
         await Order.updateOne(
           { stock_tx_id: newOrder.stock_tx_id },
@@ -135,11 +149,15 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
             }
           }
         );
+        console.log("In order service Order updated in DB");
 
         return res.status(200).json({success: true, data: null});
       } else {
         // refund user and return appropriate response
-        console.log('Order not matched. Refunding user: ', newOrder.user_id);
+        console.log(
+          "In order service Order not matched. Refunding user: ",
+          newOrder.user_id
+        );
         await axios.post(
           `${transactionServiceUrl}/addMoneyToWallet`,
           {
@@ -148,7 +166,10 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
           { headers: { token: req.headers.token } }
         );
 
-        console.log("Refunded user $",newOrder.stock_price * newOrder.quantity);
+        console.log(
+          "In order service Refunded user $",
+          newOrder.stock_price * newOrder.quantity
+        );
 
         return res.status(200).json({success: false, data: 'error: '});
       }
@@ -156,7 +177,7 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
     } else {
       // Attempt to deduct stocks from user's portfolio
       
-      console.log('Processing SELL/LIMIT order:', newOrder);
+      console.log("In order service Processing SELL/LIMIT order:", newOrder);
       
       // Add order to database
       await newOrder.save();
@@ -164,49 +185,75 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       // Add order to Redis sorted set
       redisSellOrdersKey = `sell_orders:${stock_id}`;
       await redisClient.zadd(redisSellOrdersKey, price, JSON.stringify(newOrder));
-      console.log(`Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`);
+      console.log(
+        `In order service Added SellOrder to Redis Sorted Set: ${redisSellOrdersKey}`
+      );
       
       // Clear cached data after an hour to avoid stale entries
       await redisClient.expire(redisSellOrdersKey, 3600);
 
       const timestamp = Date.now();
-      console.log("Generated timestamp: ", timestamp);
-      console.log("stock_id: ", stock_id);
+      console.log("In order service Generated timestamp: ", timestamp);
+      console.log("In order service stock_id: ", stock_id);
 
       // Update lowest price for stock
-      const currentLowestPrice = await redisClient.get(`market_price:${stock_id}`);
+      const currentLowestPrice = await redisClient.get(
+        `market_price:${stock_id}`
+      );
       if (!currentLowestPrice || price < parseFloat(currentLowestPrice)) {
-        await redisClient.set(`market_price:${stock_id}`, price, "EX", 3600);   // set market price redis variable for stock
-        await redisClient.zrem('market_price_ordered', stock_id);               // remove stale
-        await redisClient.zadd('market_price_ordered', timestamp, stock_id);    // add to list of ordered market prices for getStockPrices
-        console.log(`Updated market price for stock ${stock_id}: ${price}`);
+        await redisClient.set(
+          `market_price:${stock_id}`,
+          price,
+          "EX",
+          3600
+        );   // set market price redis variable for stock
+        await redisClient.zrem(
+          `market_price_ordered`,
+          stock_id
+        );               // remove stale
+        await redisClient.zadd(
+          `market_price_ordered`,
+          timestamp,
+          stock_id
+        );    // add to list of ordered market prices for getStockPrices
+        console.log(
+          `In order service Updated market price for stock ${stock_id}: ${price}`
+        );
       }
 
-      console.log("Updating user's portfolio for sell order");
+      console.log("In order service Updating user's portfolio for sell order");
       console.log("user_id: ", newOrder.user_id);
       console.log("stock_id: ", newOrder.stock_id);
       console.log("quantity: ", newOrder.quantity);
       console.log("is_buy: ", is_buy);
 
-
-      await axios.post(
-        `${transactionServiceUrl}/updateStockPortfolio`,
-        {
+      // Publish to Stock Portfolio
+      const needToUpdate ={
           user_id: newOrder.user_id,
           stock_id: newOrder.stock_id,
           quantity: newOrder.quantity,
           is_buy: is_buy
-        },
-        {
-          headers: {
-            token: req.headers.token, // Pass the authorization header
-          },
         }
-      );
+      publishToStockPortfolio(needToUpdate);
+
+    //   await axios.post(
+    //     `${transactionServiceUrl}/updateStockPortfolio`,
+    //     {
+    //       user_id: newOrder.user_id,
+    //       stock_id: newOrder.stock_id,
+    //       quantity: newOrder.quantity,
+    //       is_buy: is_buy
+    //     },
+    //     {
+    //       headers: {
+    //         token: req.headers.token, // Pass the authorization header
+    //       },
+    //     }
+    //   );
 
     }
 
-    console.log("Order placed successfully:", newOrder);
+    console.log("In order service Order placed successfully:", newOrder);
     // Return order confirmation
     res.json({ success: true, data: newOrder });
 

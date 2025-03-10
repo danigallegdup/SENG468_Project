@@ -26,7 +26,7 @@ const redisClient = require("./redis");
 // Exports
 exports.getStockTransactions = async (req, res) => {
   try {
-    console.log("controllers/stockTransactionController.js: Fetching stock transactions...");
+    console.log("controllers/stockTransactionController.js: getting stock transactions...");
 
     const transactions = await Order.find({ user_id: req.user.id }).sort({
       timeStamp: 1,
@@ -46,10 +46,10 @@ exports.getStockTransactions = async (req, res) => {
   }
 };
 
-exports.updateStockPortfolio = async (req, res) => {
+exports.updateStockPortfolio = async (req) => {
   try {
 
-    const {user_id, stock_id, quantity, is_buy} = req.body;
+    const {user_id, stock_id, quantity, is_buy} = req;
 
     if (is_buy) {
       console.log("Fulfilling buy order with updateStockPortfolio");
@@ -71,9 +71,7 @@ exports.updateStockPortfolio = async (req, res) => {
 
     if (!userStock && !is_buy) {
       console.log("User stock not found");
-      return res
-        .status(404)
-        .json({ success: false, data: { error: "User stock not found" } });
+      return null
 
     } else if (!userStock && is_buy) {
       console.log("User stock not found, creating new for UserHeldStock for: ", stockName);
@@ -107,7 +105,7 @@ exports.updateStockPortfolio = async (req, res) => {
 
     if (userStock.quantity_owned <= 0) {
       await UserHeldStock.deleteOne({ _id: userStock._id });
-      return res.json({ success: true, data: null });
+      return "success";
     }
 
     try {
@@ -115,23 +113,21 @@ exports.updateStockPortfolio = async (req, res) => {
       console.log("Successfully updated stock portfolio.")
     } catch (err) {
       console.log("updateStockPortfolio couldn't save userStock to database.");
-      return res
-      .status(500)
-      .json({ success: false, data: { error: "Update stock portfolio failed: "+ err.message } });
+      return null;
     }
     
-    return res.json({ success: true, data: null });
+    return "success"
 
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, data: { error: "Update stock portfolio failed: "+ err.message } });
+    return null
   }
 }
 
 exports.getStockPortfolio = async (req, res) => {
   try {
+    console.log("controllers/stockTransactionController.js: getting stock portfolio...");
     const stocks = await UserHeldStock.find({ user_id: req.user.id });
+    console
     return res.json({ success: true, data: stocks });
   } catch (err) {
     return res.status(500).json({ success: false, data: { error: err.message } });
