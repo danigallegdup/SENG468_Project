@@ -28,7 +28,7 @@ async function publishToWalletQueue(addToWallet) {
     await channel.close();
     await connection.close();
   } catch (error) {
-    console.error("❌ Error publishing order:", error);
+    console.error("❌ Error publishing wallet update:", error);
   }
 }
 

@@ -37,12 +37,14 @@ app.post('/register', async (req, res) => {
   try {
     const { user_name, password, name } = req.body;
     if (!user_name || !password || !name) {
+      console.log('All fields are required');
       return res.status(400).json({ success: false, error: 'All fields are required' });
     }
 
     // Check if user exists in Redis
     const existingUser = await redisClient.exists(`user:${user_name}`);
     if (existingUser) {
+      console.log(`User ${user_name} already exists`);
       return res.status(400).json({ success: false, error: 'Username already exists' });
     }
 
@@ -55,7 +57,7 @@ app.post('/register', async (req, res) => {
       name: name,
       password: password, // Storing plain text password (as per request)
     });
-
+    console.log(`User ${user_name} registered successfully`);
     return res.status(201).json({ success: true });
   } catch (err) {
     console.error('Registration Error:', err);
@@ -76,11 +78,13 @@ app.post('/login', async (req, res) => {
   try {
     const { user_name, password } = req.body;
     if (!user_name || !password) {
+      console.log('Both user_name and password are required');
       return res.status(400).json({ success: false, error: 'Both user_name and password are required' });
     }
 
     const userData = await redisClient.hgetall(`user:${user_name}`);
     if (!userData || userData.password !== password) {
+      console.log('Invalid username or password');
       return res.status(400).json({ success: false, error: 'Invalid username or password' });
     }
 
@@ -88,7 +92,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ id: userData.id, username: user_name }, process.env.JWT_SECRET, {
       expiresIn: '5h',
     });
-
+    console.log(`User ${user_name} logged in successfully`);
     return res.status(200).json({ success: true, data: { token } });
   } catch (err) {
     console.error('Login Error:', err);
