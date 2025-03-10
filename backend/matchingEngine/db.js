@@ -11,8 +11,6 @@ const URI = "mongodb+srv://gabe:LgfYYjPtues0CiVF@assets.uth6v.mongodb.net/?retry
 const connectDB = async () => {
   try {
     await mongoose.connect(URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       readPreference: 'secondaryPreferred'
     });
     console.log("✅ MongoDB Atlas Connected Successfully for Matching Engine");
