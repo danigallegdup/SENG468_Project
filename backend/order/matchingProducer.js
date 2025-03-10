@@ -30,7 +30,7 @@ async function publishOrder(order) {
 
         // Send the order to the queue
         channel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(order)), {
-            persistent: true // Ensures message is not lost if RabbitMQ restarts
+            persistent: false
         });
 
         console.log(`✅ Order Published to Queue:`, order);

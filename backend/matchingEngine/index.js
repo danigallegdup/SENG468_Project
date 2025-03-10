@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const redisClient = require('./redis');
 const { consumeOrders } = require('./matchingConsumer');
-const connectDB = require('./db');
 const { matchOrder } = require('./matchOrder');
 const {connectRabbitMQ} = require("./rabbitmq"); // Import/start RabbitMQ
 
@@ -12,9 +11,6 @@ app.use(express.json());
 
 // RabbitMQ connection
 connectRabbitMQ().catch(console.error);
-
-// MongoDB connection
-connectDB();
 
 // Start RabbitMQ consumer to process orders asynchronously
 consumeOrders().catch(console.error);

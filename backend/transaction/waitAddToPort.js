@@ -48,15 +48,6 @@ async function updateStockPortfolioAsync(timeout = 5000) {
           } else {
             console.log("Failed to update portfolio");
           }
-        //   clearTimeout(timeoutId);
-          
-          //   if (response.stock_tx_id === null) {
-          //     clearTimeout(timeoutId);
-          //     channel.ack(msg);
-          //     resolve(response);
-          //   } else {
-          //     channel.nack(msg, false, true); // Put back if not the right order
-          //   }
         }
       },
       { noAck: false }
