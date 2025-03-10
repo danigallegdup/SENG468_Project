@@ -4,8 +4,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const connectDB = require('./db');
-const Order = require('./Order');
 const { v4: uuidv4 } = require("uuid");
 
 const authMiddleware = require('./authMiddleware'); // Import authMiddleware
@@ -21,7 +19,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDB();
 
 // Health-check route
 app.get('/health', (req, res) => res.status(200).send('OK'));

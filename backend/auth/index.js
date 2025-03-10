@@ -8,12 +8,10 @@
 
 // routes/authRoutes.js
 const express = require('express');
-const User = require('./User');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
 const cors = require("cors");
-const connectDB = require("./db");
 const app = express();
 const { v4: uuidv4 } = require("uuid");
 
@@ -24,7 +22,6 @@ const redisClient = require("./redis"); // Import Redis
 app.use(cors());
 app.use(express.json());
 dotenv.config();
-connectDB();
 
 // Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));

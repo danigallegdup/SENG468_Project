@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken"); // ✅ Import `jsonwebtoken` here instead of `authMiddleware.js`
 const cors = require("cors");
-const connectDB = require("./db");
 const {updateWalletAsync} = require("./waitToAddMoney");
 const { updateStockPortfolioAsync } = require("./waitAddToPort");
 
@@ -18,14 +17,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDB();
 
 // Import Controllers & Models
 const walletController= require("./controllers/walletController");
 const stockController = require("./controllers/stockController");
-
-require("./models/WalletTransaction"); // Ensure models are loaded
-require("./models/Order");
 
 updateWalletAsync().catch(console.error);
 updateStockPortfolioAsync().catch(console.error);
