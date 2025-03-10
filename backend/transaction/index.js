@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken"); // ✅ Import `jsonwebtoken` here instead of `authMiddleware.js`
 const cors = require("cors");
 const connectDB = require("./db");
+const {updateWalletAsync} = require("./waitToAddMoney");
+const { updateStockPortfolioAsync } = require("./waitAddToPort");
 
 
 dotenv.config();
@@ -24,6 +26,9 @@ const stockController = require("./controllers/stockController");
 
 require("./models/WalletTransaction"); // Ensure models are loaded
 require("./models/Order");
+
+updateWalletAsync().catch(console.error);
+updateStockPortfolioAsync().catch(console.error);
 
 // ✅ Secure Wallet Transactions Route
 app.get("/getWalletTransactions", authMiddleware, walletController.getWalletTransactions);

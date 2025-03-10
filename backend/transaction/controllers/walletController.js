@@ -65,22 +65,16 @@ exports.addMoneyToWallet = async (req, res) => {
     }
 };
 
-exports.updateWallet = async (req, res) => {
+exports.updateWallet = async (req) => {
     try {
-        const { user_id, amount, is_buy, stock_tx_id, wallet_tx_id } = req.body;
+        const { user_id, amount, is_buy, stock_tx_id, wallet_tx_id } = req;
 
         if (typeof is_buy === 'undefined') {
-            return res.status(400).json({
-                success: false,
-                data: { error: "is_buy flag is required" }
-            });
+            return null;
         }
 
         if (typeof user_id === 'undefined') {
-            return res.status(400).json({
-                success: false,
-                data: { error: "No user idea provided to updateWallet" }
-            });
+            return null;
         }
   
         console.log("Updating the wallet of user ", user_id);
@@ -97,10 +91,7 @@ exports.updateWallet = async (req, res) => {
         if (is_buy) {
             // Buy order: deduct funds.
             if (currentBalance-amount < 0) {
-                return res.status(400).json({
-                    success: false,
-                    data: { error: "Insufficient funds" }
-                  });
+                return null
             }
             newBalance = currentBalance - amount;
             transactionType = 'withdrawal';
@@ -142,10 +133,10 @@ exports.updateWallet = async (req, res) => {
         console.log("Saving newTransaction to database: ", newTransaction);
 
         await newTransaction.save();
-        return res.json({ success: true, data: null });
+        return newTransaction;
     } catch (err) {
         console.error("Error updating wallet:", err);
-        return res.status(500).json({ success: false, message: "Server error" });
+        return null;
     }
 };
 
