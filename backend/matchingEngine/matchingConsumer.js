@@ -40,10 +40,9 @@ async function consumeOrders() {
                     const matchResult = await matchOrder(order); // Match the order
 
                     const response = {
+                        stock_price: matchResult.stock_price,
                         stock_tx_id: order.stock_tx_id,
                         matched: matchResult.matched,
-                        expense: matchResult.expense,
-                        stock_price: matchResult.stock_price,
                         wallet_tx_id: matchResult.wallet_tx_id
                     };
 

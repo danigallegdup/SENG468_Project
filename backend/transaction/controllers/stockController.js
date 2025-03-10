@@ -1,178 +1,122 @@
-/**
- * **./controllers/stockController.js**
- * 
- * - **Purpose:** Handles fetching stock transactions from the database.
- * - **Functionality:**
- *   - Queries the `Order` model to retrieve all stock transactions.
- *   - Sorts transactions in ascending order by `timeStamp`.
- *   - Returns transactions in JSON format.
- * - **Logging:**
- *   - Logs when fetching starts.
- *   - Logs if no transactions are found.
- *   - Logs successful retrieval of transactions.
- * - **Error Handling:**
- *   - Catches database errors.
- *   - Returns a `500` status with an error message if fetching fails.
- * - **Exports:**
- *   - `getOrders`: Called in `index.js` when `/api/Orders` is requested.
- */
-
-
-const Order = require("../models/Order");
-const UserHeldStock = require("../models/UserHeldStock");
-const Stock = require("../models/Stock");
 const redisClient = require("./redis");
 
-// Exports
+/**
+ * **stockController.js**
+ * Handles fetching stock transactions using Redis.
+ */
+
+/**
+ * Fetches stock transactions for a user from Redis.
+ */
 exports.getStockTransactions = async (req, res) => {
   try {
-    console.log("controllers/stockTransactionController.js: getting stock transactions...");
+    console.log(`Fetching stock transactions for user: ${req.user.id}`);
 
-    const transactions = await Order.find({ user_id: req.user.id }).sort({
-      timeStamp: 1,
-    });
-
+    const transactions = await redisClient.zrange(`stock_transactions:${req.user.id}`, 0, -1);
     if (!transactions.length) {
-      console.log("controllers/stockTransactionController.js: No stock transactions found.");
-      return res.status(200).json({ success: true, message: "No stock transactions available.", data: [] });
+      return res.json({ success: true, message: "No stock transactions available.", data: [] });
     }
 
-    console.log("controllers/stockTransactionController.js: Stock transactions retrieved successfully.");
-    res.json({ success: true, data: transactions });
+    const parsedTransactions = transactions.map(tx => JSON.parse(tx));
+    res.json({ success: true, data: parsedTransactions });
 
   } catch (err) {
-    console.error("controllers/stockTransactionController.js: Error fetching stock transactions:", err.message);
+    console.error("Error fetching stock transactions:", err.message);
     res.status(500).json({ success: false, message: "Server error while fetching stock transactions." });
   }
 };
 
-exports.updateStockPortfolio = async (req) => {
+/**
+ * Updates stock portfolio in Redis.
+ */
+exports.updateStockPortfolio = async ({ user_id, stock_id, quantity, is_buy }) => {
   try {
+    console.log(`Updating stock portfolio for user ${user_id}, stock: ${stock_id}`);
 
-    const {user_id, stock_id, quantity, is_buy} = req;
+    let userStock = await redisClient.zscore(`stock_portfolio:${user_id}`, stock_id);
+    userStock = userStock ? parseInt(userStock) : 0;
 
-    if (is_buy) {
-      console.log("Fulfilling buy order with updateStockPortfolio");
-    }
+    const newQuantity = is_buy ? userStock + quantity : userStock - quantity;
 
-    console.log("> Updating stock portfolio... ");
-    console.log("> user id: ", user_id);
-    console.log("> stock id:", stock_id);
-    console.log("> quantity:", quantity);
-    console.log("> is buy:", is_buy);
-
-    let userStock = await UserHeldStock.findOne({ user_id, stock_id });
-    console.log("user stock: ", userStock);
-
-    const stockName = await Stock
-      .findById(stock_id)
-      .select("stock_name");
-    console.log("stock name: ", stockName);
-
-    if (!userStock && !is_buy) {
-      console.log("User stock not found");
-      return null
-
-    } else if (!userStock && is_buy) {
-      console.log("User stock not found, creating new for UserHeldStock for: ", stockName);
-      try {
-        userStock = new UserHeldStock({
-          user_id,
-          stock_id,
-          stock_name: stockName.stock_name,
-          quantity_owned: 0,
-          updated_at: new Date(),
-        });
-      } catch(err) {
-        console.log("Couldn't create new userStock object: ", err);
-      }
-
-    }
-
-    console.log("> userStock: ", userStock);
-
-    if (is_buy) {
-      console.log("updateStockPortfolio: buying stock");
-      userStock.quantity_owned = userStock.quantity_owned + quantity;
-
+    if (newQuantity <= 0) {
+      await redisClient.zrem(`stock_portfolio:${user_id}`, stock_id);
     } else {
-      console.log("updateStockPortfolio: selling stock");
-      userStock.quantity_owned = userStock.quantity_owned - quantity;
+      await redisClient.zadd(`stock_portfolio:${user_id}`, newQuantity, stock_id);
     }
 
-    userStock.updated_at = new Date();
-    console.log("updateStockPortfolio/user stock: ", userStock);
-
-    if (userStock.quantity_owned <= 0) {
-      await UserHeldStock.deleteOne({ _id: userStock._id });
-      return "success";
-    }
-
-    try {
-      await userStock.save();
-      console.log("Successfully updated stock portfolio.")
-    } catch (err) {
-      console.log("updateStockPortfolio couldn't save userStock to database.");
-      return null;
-    }
-    
-    return "success"
+    console.log(`Portfolio updated for user ${user_id} and stock ${stock_id}`);
+    return "success";
 
   } catch (err) {
-    return null
-  }
-}
-
-exports.getStockPortfolio = async (req, res) => {
-  try {
-    console.log("controllers/stockTransactionController.js: getting stock portfolio...");
-    const stocks = await UserHeldStock.find({ user_id: req.user.id });
-    console
-    return res.json({ success: true, data: stocks });
-  } catch (err) {
-    return res.status(500).json({ success: false, data: { error: err.message } });
+    console.error("Error updating stock portfolio:", err);
+    return null;
   }
 };
+
+/**
+ * Fetches stock portfolio from Redis.
+ */
+exports.getStockPortfolio = async (req, res) => {
+  try {
+    console.log(`Fetching stock portfolio for user: ${req.user.id}`);
+
+    // Fetch all stocks sorted by quantity (ascending)
+    const stockData = await redisClient.zrevrange(`stock_portfolio:${req.user.id}`, 0, -1, "WITHSCORES");
+
+    if (!stockData.length) {
+      return res.json({ success: true, message: "No stocks owned.", data: [] });
+    }
+
+    // Extract stock IDs and fetch names
+    const stockIds = stockData.filter((_, i) => i % 2 === 0);
+    const stockMap = await getStockNames(stockIds);
+
+    // Build response array
+    const portfolio = [];
+    for (let i = 0; i < stockData.length; i += 2) {
+      portfolio.push({
+        stock_id: stockData[i],
+        stock_name: stockMap[stockData[i]] || "Unknown",
+        quantity_owned: parseInt(stockData[i + 1]),
+      });
+    }
+
+    console.log("Portfolio:", portfolio);
+    res.json({ success: true, data: portfolio });
+
+  } catch (err) {
+    console.error("❌ Error fetching stock portfolio:", err.message);
+    res.status(500).json({ success: false, message: "Server error while fetching stock portfolio." });
+  }
+};
+
 
 // getStockNames: Maps stockIds to stock names
 // Helper function for getStockPrices
 const getStockNames = async (stockIds) => {
-  if (!stockIds.length) return {};
+  if (!Array.isArray(stockIds) || stockIds.length === 0) return {};
 
   try {
     const stockMap = {};  // Stores final stock name mappings
-    const missingStockIds = [];  // Tracks stock IDs not found in cache
 
-    // Attempt to fetch stock names from Redis
-    for (const stock_id of stockIds) {
-      const cachedStockName = await redisClient.get(`stock_name:${stock_id}`);
-      if (cachedStockName) {
-        stockMap[stock_id] = cachedStockName;  // Use cached value
-      } else {
-        missingStockIds.push(stock_id);  // Mark as missing in cache
-      }
-    }
+    // Use a pipeline to fetch all stock names in a single Redis call (efficient!)
+    const pipeline = redisClient.multi();
+    stockIds.forEach(stock_id => pipeline.hget(`stock:${stock_id}`, "stock_name"));
+    const results = await pipeline.exec();
 
-    // Fetch missing stock names from the database (only for uncached stocks)
-    if (missingStockIds.length > 0) {
-      const stocks = await Stock.find({ _id: { $in: missingStockIds } })
-        .select("_id stock_name")
-        .lean();
+    // Process the results
+    stockIds.forEach((stock_id, index) => {
+      stockMap[stock_id] = results[index] ? results[index][1] || "Unknown" : "Unknown";
+    });
 
-      // Store fetched stock names in Redis and in stockMap
-      for (const stock of stocks) {
-        stockMap[stock._id.toString()] = stock.stock_name;
-        await redisClient.set(`stock_name:${stock._id}`, stock.stock_name, "EX", 3600);  // Cache for 1 hour
-      }
-    }
-
+    console.log("✅ Fetched stock names:", stockMap);
     return stockMap;
+
   } catch (error) {
-    console.error("❌ Error fetching stock names:", error);
+    console.error("❌ Error fetching stock names from Redis:", error);
     return {};
   }
 };
-
 
 exports.getStockPrices = async (req, res) => {
   try {
