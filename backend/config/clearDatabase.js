@@ -1,10 +1,27 @@
 // backend/config/clearDatabase.js
 // Script to reset the database
 
+
+const redisClient = require("./redis");
+
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 dotenv.config();
+
+
+const clearCache = async () => {
+  try {
+
+    // Flush all data from Redis
+    const result = await redisClient.flushall();
+    console.log("✅ Redis database cleared successfully: ", result);
+
+    await redisClient.quit();
+  } catch (err) {
+    console.error("❌ Failed to clear Redis database:", err.message);
+  }
+};
 
 const clearDatabase = async () => {
   try {
@@ -22,3 +39,4 @@ const clearDatabase = async () => {
 };
 
 clearDatabase();
+clearCache();

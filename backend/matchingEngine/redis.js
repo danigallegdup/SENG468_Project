@@ -3,19 +3,23 @@ redis.js: Responsible for connecting to Redis cache client.
           Used by the Order Service and Matching Engine.
 */
 
+const Redis = require("ioredis");
 
-const redis = require("redis");
-
-// Redis connection
-const redisClient = redis.createClient({
-  url: "redis://redis:6379",
+const redisClient = new Redis({
+  host: "redis",
+  port: 6379,
+  retryStrategy(times) {
+    return Math.min(times * 50, 2000);  // Exponential backoff max 2s
+  }
 });
 
-redisClient.on("error", (err) => console.error("❌ Redis Error:", err));
+// Error handling
+redisClient.on("error", (err) => {
+  console.error("❌ Redis Error:", err);
+});
 
-(async () => {
-  await redisClient.connect();
-  console.log("✅ Redis connected");
-})();
+redisClient.on("connect", () => {
+  console.log("✅ Matching Engine is Connected to Redis (ioredis)");
+});
 
 module.exports = redisClient;

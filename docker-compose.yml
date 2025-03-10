@@ -187,104 +187,119 @@ services:
     
 
   transaction-service-1:
-      build:
-          context: ./backend/transaction
-      container_name: transaction-service-1
-      volumes:
-        - ./backend/middleware:/backend/middleware
-      ports:
-        - "30041:3004"
-      environment:
-        - NODE_ENV=development
-        - MONGO_URI=${MONGO_URI}
-        - JWT_SECRET=${JWT_SECRET}
-      networks:
-        - backend-network
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    build:
+        context: ./backend/transaction
+    container_name: transaction-service-1
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "30041:3004"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   transaction-service-2:
-      build:
-          context: ./backend/transaction
-      container_name: transaction-service-2
-      volumes:
-        - ./backend/middleware:/backend/middleware
-      ports:
-        - "30042:3004"
-      environment:
-        - NODE_ENV=development
-        - MONGO_URI=${MONGO_URI}
-        - JWT_SECRET=${JWT_SECRET}
-      networks:
-        - backend-network
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-  transaction-service-3:
-      build:
-          context: ./backend/transaction
-      container_name: transaction-service-3
-      volumes:
-        - ./backend/middleware:/backend/middleware
-      ports:
-        - "30043:3004"
-      environment:
-        - NODE_ENV=development
-        - MONGO_URI=${MONGO_URI}
-        - JWT_SECRET=${JWT_SECRET}
-      networks:
-        - backend-network
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    build:
+        context: ./backend/transaction
+    container_name: transaction-service-2
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "30042:3004"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  
+  transaction-service-3:
+    build:
+        context: ./backend/transaction
+    container_name: transaction-service-3
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "30043:3004"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   transaction-service-4:
-      build:
-          context: ./backend/transaction
-      container_name: transaction-service-4
-      volumes:
-        - ./backend/middleware:/backend/middleware
-      ports:
-        - "30044:3004"
-      environment:
-        - NODE_ENV=development
-        - MONGO_URI=${MONGO_URI}
-        - JWT_SECRET=${JWT_SECRET}
-      networks:
-        - backend-network
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    build:
+        context: ./backend/transaction
+    container_name: transaction-service-4
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "30044:3004"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   transaction-service-5:
-      build:
-          context: ./backend/transaction
-      container_name: transaction-service-5
-      volumes:
-        - ./backend/middleware:/backend/middleware
-      ports:
-        - "30045:3004"
-      environment:
-        - NODE_ENV=development
-        - MONGO_URI=${MONGO_URI}
-        - JWT_SECRET=${JWT_SECRET}
-      networks:
-        - backend-network
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    build:
+        context: ./backend/transaction
+    container_name: transaction-service-5
+    volumes:
+      - ./backend/middleware:/backend/middleware
+    ports:
+      - "30045:3004"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   order-service-1:
     build:
@@ -298,6 +313,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend-network
@@ -320,6 +337,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - backend-network
     healthcheck:
@@ -340,6 +359,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend-network
@@ -362,6 +383,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - backend-network
     healthcheck:
@@ -382,6 +405,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend-network
@@ -557,6 +582,7 @@ services:
       interval: 30s
       timeout: 30s
       retries: 5
+
   redis:
     image: redis:latest
     container_name: redis
@@ -564,6 +590,12 @@ services:
       - "6379:6379"
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   matching-engine:
     ports:
       - "3006:3006"
@@ -573,12 +605,19 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - NODE_ENV=development
       - RABBITMQ_URL=amqp://rabbitmq
       - REDIS_URL=redis://redis:6379
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 networks:
   backend-network:

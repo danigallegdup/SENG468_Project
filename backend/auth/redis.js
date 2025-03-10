@@ -19,7 +19,7 @@ redisClient.on("error", (err) => {
 });
 
 redisClient.on("connect", () => {
-  console.log("✅ Order Service is Connected to Redis (ioredis)");
+  console.log("✅ Authentication Service is Connected to Redis (ioredis)");
 });
 
 module.exports = redisClient;

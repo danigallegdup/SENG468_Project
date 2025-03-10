@@ -17,6 +17,8 @@ const connectDB = require("./db");
 const app = express();
 const { v4: uuidv4 } = require("uuid");
 
+const redisClient = require("./redis"); // Import Redis
+
 
 // Middleware
 app.use(cors());
@@ -37,41 +39,33 @@ app.get('/health', (req, res) => res.status(200).send('OK'));
 app.post('/register', async (req, res) => {
   try {
     const { user_name, password, name } = req.body;
+    if (!user_name || !password || !name) {
+      return res.status(400).json({ success: false, error: 'All fields are required' });
+    }
 
-    // if (!user_name || !password || !name) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     data: { error: 'All fields (user_name, password, name) are required' }
-    //   });
-    // }
+    // Check if user exists in Redis
+    const existingUser = await redisClient.exists(`user:${user_name}`);
+    if (existingUser) {
+      return res.status(400).json({ success: false, error: 'Username already exists' });
+    }
 
-    // const existingUser = await User.findOne({ username: user_name });
-    // if (existingUser) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     data: { error: 'Username already exists' }
-    //   });
-    // }
+    const userId = uuidv4();
 
-    // // Create new user.
-    // // (Since the User model requires an email, we create a dummy email.)
-    // const newUser = new User({
-    //   username: user_name,
-    //   email: `${user_name}@dummy.com`,
-    //   hashed_password: password,
-    // });
+    // Store user data in Redis as a hash
+    await redisClient.hmset(`user:${user_name}`, {
+      id: userId,
+      username: user_name,
+      name: name,
+      password: password, // Storing plain text password (as per request)
+    });
 
-    // await newUser.save();
-
-    return res.status(201).json({ success: true, data: null });
+    return res.status(201).json({ success: true });
   } catch (err) {
     console.error('Registration Error:', err);
-    return res.status(500).json({
-      success: false,
-      data: { error: "Server error during registration" },
-    });
+    return res.status(500).json({ success: false, error: 'Server error during registration' });
   }
 });
+
 
 /**
  * @route   POST /api/auth/login
@@ -80,39 +74,28 @@ app.post('/register', async (req, res) => {
  * @return  { success: true, data: { token } } on success,
  *          { success: false, data: { error: <errorMessage> } } on failure.
  */
+
 app.post('/login', async (req, res) => {
   try {
     const { user_name, password } = req.body;
+    if (!user_name || !password) {
+      return res.status(400).json({ success: false, error: 'Both user_name and password are required' });
+    }
 
-    // if (!user_name || !password) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     data: { error: "Both user_name and password are required" },
-    //   });
-    // }
+    const userData = await redisClient.hgetall(`user:${user_name}`);
+    if (!userData || userData.password !== password) {
+      return res.status(400).json({ success: false, error: 'Invalid username or password' });
+    }
 
-    // const user = await User.findOne({ username: user_name });
-    // if (!user || user.hashed_password !== password) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     data: { error: "Invalid username or password" },
-    //   });
-    // }
+    // Generate JWT token
+    const token = jwt.sign({ id: userData.id, username: user_name }, process.env.JWT_SECRET, {
+      expiresIn: '5h',
+    });
 
-    // Generate JWT token (expires in 5 hours)
-    const token = jwt.sign(
-      { id: uuidv4(), username: user_name },
-      process.env.JWT_SECRET,
-      { expiresIn: '5h' }
-    );
-
-    return res.status(201).json({ success: true, data: { token } });
+    return res.status(200).json({ success: true, data: { token } });
   } catch (err) {
     console.error('Login Error:', err);
-    return res.status(500).json({
-      success: false,
-      data: { error: "Server error during login" },
-    });
+    return res.status(500).json({ success: false, error: 'Server error during login' });
   }
 });
 
