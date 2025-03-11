@@ -77,8 +77,11 @@ exports.updateWallet = async (req) => {
             return null; // Not enough funds
         }
 
-        const newBalance = is_buy ? balance - amount : balance + amount;
-        await redisClient.hset(`wallet:${user_id}`, "balance", newBalance);
+        const pipeline = redisClient.multi();
+
+        const newBalance = is_buy ? balance - amount : bala
+        nce + amount;
+        await pipeline.hset(`wallet:${user_id}`, "balance", newBalance);
 
         // Log transaction in Redis Sorted Set
         const wallet_tx_id = uuidv4(); // Unique transaction ID
@@ -93,7 +96,8 @@ exports.updateWallet = async (req) => {
             time_stamp: new Date().toISOString()
         };
 
-        await redisClient.zadd(`wallet_transactions:${user_id}`, timestamp, JSON.stringify(transaction));
+        await pipeline.zadd(`wallet_transactions:${user_id}`, timestamp, JSON.stringify(transaction));
+        await pipeline.exec();
 
         console.log(`✅ Logged wallet transaction for user ${user_id}: `, transaction);
 
