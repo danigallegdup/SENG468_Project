@@ -29,10 +29,10 @@ app.post("/createStock", authMiddleware, async (req, res) => {
     }
 
     // Check if stock exists in Redis
-    const existingStockId = await redisClient.get(`stock_name_to_id:${stock_name}`);
+    /*const existingStockId = await redisClient.get(`stock_names:${stock_id}`);
     if (existingStockId) {
       return res.status(409).json({ success: false, message: "Stock already exists" });
-    }
+    }*/
 
     // Create a new stock ID
     const stock_id = uuidv4();
@@ -44,8 +44,6 @@ app.post("/createStock", authMiddleware, async (req, res) => {
       current_price: 0,
     });
 
-    // Map stock name to stock_id
-    await redisClient.set(`stock_name_to_id:${stock_name}`, stock_id);
 
     res.json({ success: true, data: { stock_id } });
   } catch (error) {

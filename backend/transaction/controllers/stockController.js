@@ -60,37 +60,82 @@ exports.getStockPortfolio = async (req, res) => {
   try {
     console.log(`Fetching stock portfolio for user: ${req.user.id}`);
 
-    // Fetch all stocks sorted by quantity (ascending)
+    // Fetch all stock holdings (stock IDs + quantities)
     const stockData = await redisClient.zrevrange(`stock_portfolio:${req.user.id}`, 0, -1, "WITHSCORES");
 
     if (!stockData.length) {
       return res.json({ success: true, message: "No stocks owned.", data: [] });
     }
 
-    // Extract stock IDs and fetch names
+    // Extract stock IDs
     const stockIds = stockData.filter((_, i) => i % 2 === 0);
-    const stockMap = await getStockNames(stockIds);
+
+    // Fetch stock names with redis pipeline
+    const pipeline = redisClient.multi();
+    stockIds.forEach(stockId => pipeline.hget(`stock:${stockId}`, "stock_name"));
+    const stockNames = await pipeline.exec();
 
     // Build response array
     const portfolio = [];
     for (let i = 0; i < stockData.length; i += 2) {
       portfolio.push({
         stock_id: stockData[i],
-        stock_name: stockMap[stockData[i]] || "Unknown",
+        stock_name: stockNames[i / 2][1] || "Unknown", // Extract stock name from batch response
         quantity_owned: parseInt(stockData[i + 1]),
       });
     }
 
-    console.log("Portfolio:", portfolio);
-    res.json({ success: true, data: portfolio });
+    console.log("✅ Stock portfolio retrieved:", portfolio);
+    return res.json({ success: true, data: portfolio });
 
   } catch (err) {
     console.error("❌ Error fetching stock portfolio:", err.message);
-    res.status(500).json({ success: false, message: "Server error while fetching stock portfolio." });
+    return res.status(500).json({ success: false, message: "Server error while fetching stock portfolio." });
   }
 };
 
 
+exports.getStockPrices = async (req, res) => {
+  try {
+      // Get all stock IDs that have a market price
+      const stockIds = await redisClient.zrange("market_price_ordered", 0, -1);
+
+      if (!stockIds.length) {
+          return res.status(200).json({ success: true, data: [] });
+      }
+
+      // Get stock names and prices in one call
+      const pipeline = redisClient.multi();
+      stockIds.forEach(stockId => {
+          pipeline.get(`market_price:${stockId}`);  // Fetch price
+          pipeline.hget(`stock:${stockId}`, "stock_name");   // Fetch name
+      });
+
+      const stockData = await pipeline.exec();
+
+      // Format results
+      const formattedPrices = [];
+      for (let i = 0; i < stockData.length; i += 2) {
+          if (stockData[i][1] && stockData[i + 1][1]) {  // Ensure both price & name exist
+              formattedPrices.push({
+                  stock_id: stockIds[i / 2],
+                  stock_name: stockData[i + 1][1], // Name from hash set
+                  current_price: parseFloat(stockData[i][1]), // Price from Redis key
+              });
+          }
+      }
+
+      console.log("✅ Stock prices retrieved.");
+      return res.json({ success: true, data: formattedPrices });
+
+  } catch (err) {
+      console.error("❌ Error fetching stock prices:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+/*
 // getStockNames: Maps stockIds to stock names
 // Helper function for getStockPrices
 const getStockNames = async (stockIds) => {
@@ -157,4 +202,4 @@ exports.getStockPrices = async (req, res) => {
     console.error('❌ Error fetching stock prices:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-};
+};*/
