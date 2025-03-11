@@ -7,7 +7,7 @@ const Redis = require("ioredis");
 
 const redisClient = new Redis({
   host: "redis",
-  port: 5001,
+  port: 6379,
   retryStrategy(times) {
     return Math.min(times * 50, 2000);  // Exponential backoff max 2s
   }

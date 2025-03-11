@@ -18,7 +18,7 @@ async function updateWalletAsync(timeout = 5000) {
     const connection = await amqp.connect({
                 protocol: 'amqp',
                 hostname: 'rabbitmq',
-                port: 5002,
+                port: 5672,
                 username: 'admin',
                 password: 'admin',
                 vhost: '/'

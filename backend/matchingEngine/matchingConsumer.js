@@ -19,7 +19,7 @@ async function consumeOrders() {
             const connection = await amqp.connect({
               protocol: 'amqp',
               hostname: 'rabbitmq',
-              port: 5002,
+              port: 5672,
               username: 'admin',
               password: 'admin',
               vhost: '/'
