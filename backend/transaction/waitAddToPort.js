@@ -17,7 +17,7 @@ async function updateStockPortfolioAsync(timeout = 5000) {
     const connection = await amqp.connect({
                 protocol: 'amqp',
                 hostname: 'rabbitmq',
-                port: 5672,
+                port: 5002,
                 username: 'admin',
                 password: 'admin',
                 vhost: '/'

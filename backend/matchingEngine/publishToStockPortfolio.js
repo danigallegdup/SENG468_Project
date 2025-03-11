@@ -5,7 +5,7 @@ async function publishToStockPortfolio(updatePort) {
     const connection = await amqp.connect({
       protocol: "amqp",
       hostname: "rabbitmq",
-      port: 5672,
+      port: 5002,
       username: "admin",
       password: "admin",
       vhost: "/",
