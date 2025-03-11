@@ -821,7 +821,7 @@ services:
     container_name: rabbitmq
     ports:
       - "5002:5002"
-      - "15672:15672" # Management UI
+      - "5006:5006" # Management UI
     networks:
       - backend-network
     environment:
