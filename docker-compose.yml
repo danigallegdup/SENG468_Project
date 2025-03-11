@@ -841,6 +841,9 @@ services:
       - "6379:6379"
     networks:
       - backend-network
+    command: [ "redis-server", "/etc/redis/redis.conf" ]
+    volumes:
+      - ./backend/config/redis.conf:/etc/redis/redis.conf
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
