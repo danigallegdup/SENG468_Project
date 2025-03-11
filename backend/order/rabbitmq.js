@@ -6,12 +6,12 @@ let channel;
 async function connectRabbitMQ() {
   try {
     const connection = await amqp.connect({
-      protocol: 'amqp',
-      hostname: 'rabbitmq',
-      port: 5672,
-      username: 'admin',
-      password: 'admin',
-      vhost: '/'
+        protocol: 'amqp',
+        hostname: 'rabbitmq',
+        port: 5672,
+        username: 'admin',
+        password: 'admin',
+        vhost: '/'
     });
     channel = await connection.createChannel();
     await channel.assertQueue('orderQueue', { durable: true });

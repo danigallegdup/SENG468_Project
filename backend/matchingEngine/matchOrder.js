@@ -168,7 +168,7 @@ async function matchOrder(newOrder) {
    await redisClient.zadd(`stock_portfolio:${newOrder.user_id}`, updatedBuyerQuantity, newOrder.stock_id);
 
     // Store wallet transaction in Redis for buyer
-    buyer_wallet_transaction = {
+    const buyer_wallet_transaction = {
       wallet_tx_id: new_wallet_tx_id,
       stock_tx_id: newOrder.stock_tx_id,
       is_debit: true,
@@ -184,7 +184,7 @@ async function matchOrder(newOrder) {
     
     console.log("(matchOrder.js) Storing wallet transaction for buyer: ", buyer_wallet_transaction);
 
-    return { matched: true, stock_tx_id: fulfilled_stock_tx_id, stock_price: sellOrder.stock_price, wallet_tx_id: new_wallet_tx_id };
+    return { matched: true, stock_tx_id: fulfilled_stock_tx_id, stock_price: sellOrder.stock_price, wallet_tx_id: new_wallet_tx_id, user_id: newOrder.user_id };
 
   } catch (error) {
     console.log("!! SERVICE_AUTH_TOKEN:", SERVICE_AUTH_TOKEN);
