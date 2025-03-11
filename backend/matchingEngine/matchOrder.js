@@ -184,6 +184,28 @@ async function matchOrder(newOrder) {
       })
     );
 
+    // Store wallet transaction for buyer
+    pipeline.zadd(
+      `stock_transactions:${newOrder.user_id}`,
+      timestamp,
+      JSON.stringify({
+        user_id: newOrder.user_id,
+        stock_id: newOrder.stock_id,
+        is_buy: true,
+        order_type: "MARKET",
+        quantity: newOrder.quantity,
+        stock_price: sellOrder.stock_price,
+        order_status: "COMPLETED",
+        created_at: new Date(),
+        stock_tx_id: newOrder.stock_tx_id,
+        parent_stock_tx_id: null,
+        wallet_tx_id: new_wallet_tx_id,
+      })
+    );
+    
+    console.log("✅ Buyer stock transaction stored successfully.");
+    
+
     console.log("✅ Executing Redis pipeline...");
     await pipeline.exec();
 
