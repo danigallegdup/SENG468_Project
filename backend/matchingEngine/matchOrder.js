@@ -32,6 +32,7 @@ async function matchOrder(newOrder) {
 
     // Get Market Price from Reddit variable
     let marketPrice = await redisClient.get(`market_price:${newOrder.stock_id}`);
+    console.log("marketPrice: ", marketPrice);
 
     if (!marketPrice) {
       console.log("⚠️ No market price available for ", newOrder.stock_id);
