@@ -101,31 +101,36 @@ app.post("/placeStockOrder", authMiddleware, async (req, res) => {
       publishOrder(newOrder);
 
       // Get response from Order Response RabbitMQ Queue
-      const response = await waitForOrderResponse(newOrder.stock_tx_id, 1000000);
+      // const response = await waitForOrderResponse(newOrder.stock_tx_id, 1000000);
       
-      console.log('(order/index.js) Received order response:', response);
+      // console.log('(order/index.js) Received order response:', response);
 
-      if (!response) {
-        return res.status(500).json({ success: false, message: 'Order processing timeout' });
-      }
+      // if (!response) {
+      //   return res.status(500).json({ success: false, message: 'Order processing timeout' });
+      // }
 
       // Handle Order Response
-      if (response.matched) {
+      // if (response.matched) {
 
         console.log("Order Service received match.");
         console.log("Updating stock_transactions as COMPLETED for user", req.user.id);
 
         await redisClient.zrem(`stock_transactions:${req.user.id}`, JSON.stringify(newOrder));
-        await redisClient.zadd(`stock_transactions:${req.user.id}`, timestamp, JSON.stringify({
-          ...newOrder,
-          order_status: "COMPLETED",
-          stock_price: response.stock_price,
-          wallet_tx_id: response.wallet_tx_id,
-        }));
+        // await redisClient.zadd(
+        //   `stock_transactions:${req.user.id}`,
+        //   timestamp,
+        //   JSON.stringify({
+        //     ...newOrder,
+        //     order_status: "COMPLETED",
+        //     stock_price: response.stock_price,
+        //     wallet_tx_id: response.wallet_tx_id,
+        //   })
+        // );
       
 
         return res.status(200).json({success: true, data: null});
-      }
+      
+      // }
 
     // LIMIT SELL Order handling
     } else {      

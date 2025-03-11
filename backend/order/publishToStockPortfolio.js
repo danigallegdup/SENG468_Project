@@ -28,7 +28,7 @@ async function publishToStockPortfolio(updatePort) {
     await channel.close();
     await connection.close();
   } catch (error) {
-    console.error("❌ Error publishing order:", error);
+    console.error("❌ Error publishing stock portfolio update:", error);
   }
 }
 
