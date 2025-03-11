@@ -41,18 +41,13 @@ exports.addMoneyToWallet = async (req, res) => {
             });
         }
 
+        // create redis pipeline to update wallet
         const userWalletKey = `wallet:${req.user.id}`;
+        const pipeline = redisClient.multi();
+        pipeline.hincrbyfloat(userWalletKey, "balance", amount);
 
-        // Retrieve existing balance, default to 0 if not found
-        let currentBalance = await redisClient.hget(userWalletKey, "balance");
-        currentBalance = currentBalance ? parseFloat(currentBalance) : 0;
-
-        // New balance after adding money
-        const newBalance = currentBalance + amount;
-
-        // Update Redis wallet balance
-        await redisClient.hset(userWalletKey, "balance", newBalance);
-
+        // execute pipeline
+        await pipeline.exec();
 
         return res.json({ success: true, data: null });
 
