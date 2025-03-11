@@ -1,4 +1,51 @@
-# SENG468_Project
+# SENG468_Project Test Run 2: 10k Concurrent Users
+
+## Testing Process
+
+1. **Clone the Repository**  
+   Clone the `SENG468_Project` repository to your virtual machine.
+
+2. **Checkout the Correct Branch**  
+   Switch to the branch `TestRun2`.
+
+3. **Prepare the Test Configuration**  
+   Within the `TestRun3` directory, copy the path to the `Config/` directory and the corresponding user files.
+
+4. **Initial Setup**  
+   Before executing any large-scale user tests, run the initial setup script to configure the environment:  
+   ```bash
+   jmeter -n -t ./InitialSetupVM.jmx
+   ```
+
+5. **Run Test Scripts**  
+   Three test scripts are provided for different user loads. Each script is pre-configured with the correct number of users and the appropriate path to user files:
+   - **For 1,000 users:** `test1k.jmx`
+   - **For 5,000 users:** `test5k.jmx`
+   - **For 10,000 users:** `test10K.jmx`  
+     
+   To run a test, use a command similar to the example below:
+   ```bash
+   jmeter -n -t ./test1k.jmx -l 1k_result.log -e -o ./1k_results/
+   ```
+
+6. **Managing Test Results**  
+   After obtaining the results, move the following items to the repository [copy_test](https://github.com/hieuvuong2310/copy_test) (to keep the main working repository clean):
+   - `results.log`
+   - `jmeter.log`
+   - The `results/` directory
+
+7. **Locating the Results**  
+   You can find the logs and the HTML reports in the following locations:
+   - **[1k users result](https://github.com/hieuvuong2310/copy_test/tree/run1k)**
+   - **[5k users result](https://github.com/hieuvuong2310/copy_test/tree/10kTest)**
+   - **[10k users result](https://github.com/hieuvuong2310/copy_test/tree/run10K)**
+
+8. **Additional Configuration for 10k User Test**  
+   For tests with 10,000 users, adjust the heap size by running the following command in the VM:
+   ```bash
+   export HEAP="-Xms2g -Xmx4g"
+   ```
+
 
 ## File Structure
 
