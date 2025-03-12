@@ -893,7 +893,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/Users/hieuvuong/Documents/uvic/fourth/seng468/project/STU_testRun/SENG468_Project/TestRun3/result_1k.csv</stringProp>
+        <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/result_1k.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
