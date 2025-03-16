@@ -14,6 +14,25 @@ services:
     networks:
       - backend-network
   
+  front-end:
+    build:
+      context: ./day-trading-app
+      dockerfile: Dockerfile
+    container_name: front-end
+    ports:
+      - "3000:3000"       # Expose front-end on localhost:3000
+    environment:
+      - NODE_ENV=development
+      # If you need environment variables for Next.js, define them here:
+      # - NEXT_PUBLIC_API_GATEWAY_URL=http://api-gateway:8080
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   auth-service-1:
     build:
       context: ./backend/auth
