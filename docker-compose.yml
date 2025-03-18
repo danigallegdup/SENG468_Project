@@ -19,6 +19,7 @@ services:
       context: ./backend/auth
     deploy:
       replicas: 20
+      endpoint_mode: vip
     volumes:
       - ./backend/auth:/server/auth
     environment:
@@ -42,6 +43,7 @@ services:
         context: ./backend/transaction
     deploy:
       replicas: 20
+      endpoint_mode: vip
     volumes:
       - ./backend/transaction:/server/transaction
     environment:
@@ -66,6 +68,7 @@ services:
       context: ./backend/order
     deploy:
       replicas: 20
+      endpoint_mode: vip
     volumes:
       - ./backend/order:/server/order
     environment:
@@ -90,6 +93,7 @@ services:
       context: ./backend/userManagement
     deploy:
       replicas: 20
+      endpoint_mode: vip
     volumes:
       - ./backend/userManagement:/server/userManagement
     environment:
@@ -187,4 +191,4 @@ services:
 
 networks:
   backend-network:
-    driver: overlay
+    driver: bridge
