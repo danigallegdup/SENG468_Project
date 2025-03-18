@@ -87,11 +87,11 @@ services:
 
   usermanagement-service:
     build:
-      context: ./backend/usermanagement
+      context: ./backend/userManagement
     deploy:
       replicas: 20
     volumes:
-      - ./backend/usermanagement:/server/usermanagement
+      - ./backend/userManagement:/server/userManagement
     environment:
       - NODE_ENV=development
       - MONGO_URI=${MONGO_URI}
