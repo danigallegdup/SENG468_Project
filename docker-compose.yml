@@ -113,9 +113,9 @@ services:
 
   api-gateway:
     image: nginx:latest
-    container_name: api-gateway
-    ports:
-      - "8080:8080"  # API Gateway is exposed on port 8080
+    deploy:
+      replicas: 3   # Multiple instances of Nginx
+      endpoint_mode: vip
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -127,6 +127,18 @@ services:
         condition: service_healthy
       usermanagement-service:
         condition: service_healthy
+    networks:
+      - backend-network
+
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy
+    ports:
+      - "80:80"    # Exposing Load Balancer on port 80
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - api-gateway
     networks:
       - backend-network
 
