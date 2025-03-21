@@ -2,7 +2,7 @@
 FROM node:20
 
 # Set the working directory in the container
-WORKDIR /backend/userManagement
+WORKDIR /server
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3003
 
 # Define the command to run the app
-CMD ["node", "index.js"]
+CMD ["npm", "start"]

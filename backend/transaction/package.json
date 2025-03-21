@@ -4,7 +4,8 @@
   "description": "Transaction",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "dependencies": {
     "amqplib": "^0.10.5",
@@ -16,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.13.0",
     "mongoose": "^8.10.0",
+    "nodemon": "^3.1.9",
     "uuid": "^11.1.0"
   }
 }
