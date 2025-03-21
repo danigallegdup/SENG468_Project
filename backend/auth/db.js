@@ -12,6 +12,7 @@ const connectDB = async () => {
   try {
     console.log("🔍 Connecting to MongoDB Atlas... process.env.MONGO_URI" );
     await mongoose.connect(URL, {
+      readPreference: 'nearest',
       useNewUrlParser: true,
       useUnifiedTopology: true,
       readPreference: "nearest",

@@ -6,10 +6,23 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+const URL="mongodb://mongo1:27017/danigallegdup?replicaSet=rs0";
+
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      readPreference: 'secondaryPreferred'
+    console.log("🔍 Connecting to MongoDB Atlas... process.env.MONGO_URI" );
+    await mongoose.connect(URL, {
+      readPreference: 'nearest',
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      readPreference: "nearest",
+      replicaSet: "rs0",
+      maxPoolSize: 200,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 60000,
+      connectTimeoutMS: 30000,
+      retryWrites: true,
+      w: "majority"
     });
     console.log("✅ MongoDB Atlas Connected Successfully");
 

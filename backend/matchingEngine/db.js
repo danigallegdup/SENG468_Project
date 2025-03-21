@@ -6,14 +6,25 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const URI = "mongodb+srv://gabe:LgfYYjPtues0CiVF@assets.uth6v.mongodb.net/?retryWrites=true&w=majority&appName=assets";
+const URL="mongodb://mongo1:27017/danigallegdup?replicaSet=rs0";
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(URI, {
-      readPreference: 'secondaryPreferred'
+    console.log("🔍 Connecting to MongoDB Atlas... process.env.MONGO_URI" );
+    await mongoose.connect(URL, {
+      readPreference: 'nearest',
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      readPreference: "nearest",
+      replicaSet: "rs0",
+      maxPoolSize: 200,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 60000,
+      connectTimeoutMS: 30000,
+      retryWrites: true,
+      w: "majority"
     });
-    console.log("✅ MongoDB Atlas Connected Successfully for Matching Engine");
+    console.log("✅ MongoDB Atlas Connected Successfully");
 
     return mongoose.connection.db;
   } catch (err) {
