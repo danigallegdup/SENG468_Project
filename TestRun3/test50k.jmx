@@ -86,12 +86,12 @@
           </elementProp>
           <elementProp name="stockFile" elementType="Argument">
             <stringProp name="Argument.name">stockFile</stringProp>
-            <stringProp name="Argument.value">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
+            <stringProp name="Argument.value">/home/dgallegosdupuis/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="userFile" elementType="Argument">
             <stringProp name="Argument.name">userFile</stringProp>
-            <stringProp name="Argument.value">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/UserFiles/UserCreds_50000.csv</stringProp>
+            <stringProp name="Argument.value">/home/dgallegosdupuis/SENG468_Project/TestRun3/UserFiles/UserCreds_50000.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numUsers" elementType="Argument">
@@ -893,7 +893,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/result_1k.csv</stringProp>
+        <stringProp name="filename">/home/dgallegosdupuis/SENG468_Project/TestRun3/result_1k.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
