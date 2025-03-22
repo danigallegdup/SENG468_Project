@@ -17,10 +17,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to database
-mongoose.connect(process.env.MONGO_URI, {
-  readPreference: 'secondaryPreferred'
-});
+const connectDB = require("./db");
+connectDB();
+
 
 // Health-check route
 app.get("/health", (req, res) => res.status(200).send("OK"));

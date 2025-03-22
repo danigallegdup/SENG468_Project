@@ -1,6 +1,22 @@
 version: "3.9"
 
 services:
+  mongo1:
+    image: mongo:6.0
+    container_name: mongo1
+    ports:
+      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo1-data:/data/db
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   clean-mongo:
     build:
       context: ./backend/config
@@ -650,3 +666,6 @@ services:
 networks:
   backend-network:
     driver: bridge
+
+volumes:
+  mongo1-data:
