@@ -213,6 +213,7 @@ services:
 
 networks:
   backend-network:
+    name: backend-network
     driver: overlay
     attachable: true
 
