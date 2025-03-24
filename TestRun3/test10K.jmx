@@ -11,7 +11,7 @@
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
             <stringProp name="Argument.name">BASE_PORT</stringProp>
-            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.value">80</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="register" elementType="Argument">
@@ -856,7 +856,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/pratik/results.csv</stringProp>
+        <stringProp name="filename">/home/vthieu/SENG468_Project/results.csv</stringProp>
       </ResultCollector>
       <hashTree/>
       <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
@@ -893,7 +893,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/dgallegosdupuis/SENG468_Project/TestRun3/result_10k.csv</stringProp>
+        <stringProp name="filename">/home/vthieu/SENG468_Project/TestRun3/result_10k.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
