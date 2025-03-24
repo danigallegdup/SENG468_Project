@@ -214,4 +214,5 @@ services:
 networks:
   backend-network:
     driver: overlay
+    attachable: true
 
