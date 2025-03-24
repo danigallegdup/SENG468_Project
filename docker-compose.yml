@@ -213,6 +213,5 @@ services:
 
 networks:
   backend-network:
-    driver: bridge
-    attachable: true
+    driver: overlay
 
