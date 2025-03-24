@@ -14,7 +14,7 @@ const connectDB = async () => {
     await mongoose.connect(URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      readPreference: "nearest",
+      readPreference: "secondaryPreferred",
       replicaSet: "rs0",
       maxPoolSize: 200,
       serverSelectionTimeoutMS: 30000,
