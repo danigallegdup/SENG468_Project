@@ -213,7 +213,7 @@ services:
 
 networks:
   backend-network:
-    name: backend-network
+    name: seng468_project_backend-network
     driver: overlay
     attachable: true
 
