@@ -18,8 +18,10 @@ services:
     build:
       context: ./backend/auth
     deploy:
-      replicas: 20
+      replicas: 9
       endpoint_mode: vip
+    ports:
+      - "30011-30019:3001"
     volumes:
       - ./backend/auth:/server/auth
     environment:
@@ -42,8 +44,10 @@ services:
     build:
         context: ./backend/transaction
     deploy:
-      replicas: 20
+      replicas: 9
       endpoint_mode: vip
+    ports:
+      - "30041-30049:3004"
     volumes:
       - ./backend/transaction:/server/transaction
     environment:
@@ -67,8 +71,10 @@ services:
     build:
       context: ./backend/order
     deploy:
-      replicas: 20
+      replicas: 9
       endpoint_mode: vip
+    ports:
+      - "30021-30029:3002"
     volumes:
       - ./backend/order:/server/order
     environment:
@@ -92,8 +98,10 @@ services:
     build:
       context: ./backend/userManagement
     deploy:
-      replicas: 20
+      replicas: 9
       endpoint_mode: vip
+    ports:
+      - "30031-30039:3003"
     volumes:
       - ./backend/userManagement:/server/userManagement
     environment:
@@ -180,8 +188,10 @@ services:
     build:
       context: ./backend/matchingEngine
     deploy:
-      replicas: 20
+      replicas: 9
       endpoint_mode: vip
+    ports:
+      - "30081-30089:3008"
     volumes:
       - ./backend/matchingEngine:/server/matchingEngine
     depends_on:
