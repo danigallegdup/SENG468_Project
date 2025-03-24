@@ -86,7 +86,7 @@
           </elementProp>
           <elementProp name="stockFile" elementType="Argument">
             <stringProp name="Argument.name">stockFile</stringProp>
-            <stringProp name="Argument.value">/home/dgallegosdupuis/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
+            <stringProp name="Argument.value">/Users/hieuvuong/Documents/uvic/fourth/seng468/project/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="userFile" elementType="Argument">
@@ -822,7 +822,7 @@
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">true</boolProp>
         <objProp>
           <name>saveConfig</name>

@@ -188,7 +188,7 @@ services:
     build:
       context: ./backend/matchingEngine
     deploy:
-      replicas: 9
+      replicas: 4
       endpoint_mode: vip
     ports:
       - "30081-30089:3008"
