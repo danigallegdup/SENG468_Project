@@ -114,17 +114,19 @@ async function matchOrder(newOrder) {
 
       console.log("✅ Created child order:", childOrder);
 
-      const updatedParent = {
-        ...sellOrder,
-        order_status: "PARTIALLY_COMPLETE",
-        quantity: remainingQuantity,
-        wallet_tx_id: null,
-      };
-      
+      pipeline.zrem(
+        `stock_transactions:${sellOrder.user_id}`,
+        JSON.stringify(sellOrder));
+
       pipeline.zadd(
         `stock_transactions:${sellOrder.user_id}`,
         parentTimestamp,
-        JSON.stringify(updatedParent)
+        JSON.stringify({
+          ...sellOrder,
+          order_status: "PARTIALLY_FILLED",
+          quantity: remainingQuantity,
+          wallet_tx_id: null,
+        })
       );
       
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
@@ -157,6 +159,10 @@ async function matchOrder(newOrder) {
     } else {
       // Fully fulfilled, remove from Redis
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
+
+      pipeline.zrem(
+        `stock_transactions:${sellOrder.user_id}`,
+        JSON.stringify(sellOrder));
 
       // Store completed stock transaction in Redis for seller
       pipeline.zadd(
@@ -217,18 +223,22 @@ async function matchOrder(newOrder) {
     );
 
     // Store stock transaction for buyer
+    pipeline.zrem(
+      `stock_transactions:${newOrder.user_id}`,
+      JSON.stringify(newOrder));
+
     await redisClient.zadd(
       `stock_transactions:${newOrder.user_id}`,
       timestamp,
       JSON.stringify({
-        ...order,
+        ...newOrder,
         order_status: "COMPLETED",
         stock_price: sellOrder.stock_price,
         wallet_tx_id: new_wallet_tx_id,
       })
     );
 
-    console.log(`User ${response.user_id} stock_transactions updated`);
+    // console.log(`User ${response.user_id} stock_transactions updated`);
 
     console.log("✅ Executing Redis pipeline...");
     const redis_result = await pipeline.exec();

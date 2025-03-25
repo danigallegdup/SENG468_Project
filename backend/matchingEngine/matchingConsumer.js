@@ -63,8 +63,6 @@ async function startConsumersForStock(stockId) {
           );
 
           console.log(`User ${response.user_id} stock_transactions updated`);*/
-
-          // Optionally send back to another service
           // await channel.sendToQueue(RESPONSE_QUEUE, Buffer.from(JSON.stringify(response)), { persistent: true });
 
           channel.ack(msg);
