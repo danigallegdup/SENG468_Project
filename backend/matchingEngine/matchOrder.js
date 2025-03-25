@@ -9,8 +9,10 @@ const axios = require("axios");
 require("dotenv").config();
 const amqp = require("amqplib");
 const { v4: uuidv4 } = require("uuid"); 
-const { publishToWalletQueue } = require("./publishToWalletQueue");
-const { publishToStockPortfolio } = require("./publishToStockPortfolio");
+// const { publishToWalletQueue } = require("./publishToWalletQueue");
+// const { publishToStockPortfolio } = require("./publishToStockPortfolio");
+const { acquireLock, releaseLock } = require("./redisLock");
+
 
 let SERVICE_AUTH_TOKEN = "supersecretauthtoken";
 const transactionServiceUrl = "http://api-gateway:8080/transaction";
@@ -20,6 +22,14 @@ const transactionServiceUrl = "http://api-gateway:8080/transaction";
  * Handles partial fulfillment.
  */
 async function matchOrder(newOrder) {
+  const lockKey = `stock:${newOrder.stock_id}`;
+  const lockToken = await acquireLock(lockKey);
+
+  if (!lockToken) {
+    console.warn(`Could not acquire lock for ${lockKey}.`);
+    return { matched: false };    
+  }
+
   try {
     if (!newOrder.is_buy) {
       console.error(`❌ ERROR: Sell order reached matchOrder()!`, JSON.stringify(newOrder, null, 2));
@@ -56,6 +66,7 @@ async function matchOrder(newOrder) {
     }
 
     let sellOrder = JSON.parse(lowestSellOrder[0]);
+    const parentTimestamp = new Date(sellOrder.created_at).getTime(); // original time the sell order was created
 
     // Check if BUY order can be fulfilled
     if (sellOrder.quantity < newOrder.quantity) {
@@ -103,6 +114,29 @@ async function matchOrder(newOrder) {
 
       console.log("✅ Created child order:", childOrder);
 
+      pipeline.zrem(
+        `stock_transactions:${sellOrder.user_id}`,
+        JSON.stringify(sellOrder));
+
+      pipeline.zadd(
+        `stock_transactions:${sellOrder.user_id}`,
+        parentTimestamp,
+        JSON.stringify({
+          ...sellOrder,
+          order_status: "PARTIALLY_FILLED",
+          quantity: remainingQuantity,
+          wallet_tx_id: null,
+        })
+      );
+      
+      pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
+      pipeline.zadd(`sell_orders:${newOrder.stock_id}`, sellOrder.stock_price, JSON.stringify(sellOrder));
+
+      /*
+      pipeline.zadd(`stock_transactions:${sellOrder.user_id}`, timestamp, JSON.stringify(childOrder));
+
+      console.log("✅ Created child order:", childOrder);
+
       // Update parent order in Redis
       pipeline.zrem(`stock_transactions:${sellOrder.user_id}`, JSON.stringify(sellOrder));
       pipeline.zadd(
@@ -121,14 +155,18 @@ async function matchOrder(newOrder) {
       // Remove old order and reinsert updated order
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
       pipeline.zadd(`sell_orders:${newOrder.stock_id}`, sellOrder.stock_price, JSON.stringify(sellOrder));
-
+*/
     } else {
       // Fully fulfilled, remove from Redis
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
 
+      pipeline.zrem(
+        `stock_transactions:${sellOrder.user_id}`,
+        JSON.stringify(sellOrder));
+
       // Store completed stock transaction in Redis for seller
       pipeline.zadd(
-        `stock_transactions:${fulfilled_stock_tx_id}`,
+        `stock_transactions:${sellOrder.user_id}`,
         timestamp,
         JSON.stringify({
           user_id: sellOrder.user_id,
@@ -184,8 +222,27 @@ async function matchOrder(newOrder) {
       })
     );
 
+    // Store stock transaction for buyer
+    pipeline.zrem(
+      `stock_transactions:${newOrder.user_id}`,
+      JSON.stringify(newOrder));
+
+    await redisClient.zadd(
+      `stock_transactions:${newOrder.user_id}`,
+      timestamp,
+      JSON.stringify({
+        ...newOrder,
+        order_status: "COMPLETED",
+        stock_price: sellOrder.stock_price,
+        wallet_tx_id: new_wallet_tx_id,
+      })
+    );
+
+    // console.log(`User ${response.user_id} stock_transactions updated`);
+
     console.log("✅ Executing Redis pipeline...");
-    await pipeline.exec();
+    const redis_result = await pipeline.exec();
+    console.log("Redis pipeline result:", redis_result);
 
     console.log("(matchOrder.js) Storing wallet transaction for buyer.");
     return {
@@ -200,6 +257,8 @@ async function matchOrder(newOrder) {
     console.log("!! SERVICE_AUTH_TOKEN:", SERVICE_AUTH_TOKEN);
     console.error("❌ Error matching order:", error);
     return { matched: false };
+  } finally {
+    await releaseLock(lockKey, lockToken);
   }
 }
 
