@@ -187,11 +187,8 @@ services:
   matching-engine:
     build:
       context: ./backend/matchingEngine
-    deploy:
-      replicas: 4
-      endpoint_mode: vip
     ports:
-      - "30081-30089:3008"
+      - "3008:3008"
     volumes:
       - ./backend/matchingEngine:/server/matchingEngine
     depends_on:
