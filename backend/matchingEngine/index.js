@@ -1,29 +1,21 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const redisClient = require('./redis');
-const { startConsumersForStock } = require('./matchingConsumer');
-const { connectRabbitMQ } = require('./rabbitmq');
+const { consumeOrders } = require('./matchingConsumer');
+const { matchOrder } = require('./matchOrder');
+const {connectRabbitMQ} = require("./rabbitmq"); // Import/start RabbitMQ
 
 const app = express();
 app.use(express.json());
 
+// RabbitMQ connection
 connectRabbitMQ().catch(console.error);
 
-// Stock polling loop
-setInterval(async () => {
-  try {
-    const stockIds = await redisClient.smembers("active_stock_ids");
-    for (const stockId of stockIds) {
-      await startConsumersForStock(stockId);
-    }
-  } catch (err) {
-    console.error("❌ Error in stock polling loop:", err);
-  }
-}, 3000); // every 3s
+// Start RabbitMQ consumer to process orders asynchronously
+consumeOrders().catch(console.error);
 
-// Optional health endpoint
-app.get("/health", (_, res) => res.send("🟢 Matching Engine OK"));
-
+// 📌 **Start Matching Engine**
 const PORT = process.env.MATCHING_ENGINE_PORT || 3006;
 app.listen(PORT, () => {
   console.log(`🚀 Matching Engine running on port ${PORT}`);

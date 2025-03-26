@@ -134,7 +134,7 @@
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="User Thread Group" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${numUsers}</stringProp>
-        <intProp name="ThreadGroup.ramp_time">45</intProp>
+        <intProp name="ThreadGroup.ramp_time">15</intProp>
         <longProp name="ThreadGroup.duration">1000</longProp>
         <longProp name="ThreadGroup.delay">1</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
@@ -509,8 +509,8 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="5000ms Constant Timer" enabled="true">
-            <stringProp name="ConstantTimer.delay">5000</stringProp>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">500</stringProp>
           </ConstantTimer>
           <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
@@ -893,7 +893,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename"></stringProp>
+        <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/result_1k.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
