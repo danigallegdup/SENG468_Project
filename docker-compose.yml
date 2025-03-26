@@ -18,6 +18,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-1
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30011:3001"
     environment:
@@ -39,6 +41,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-2
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30012:3001"
     environment:
@@ -60,6 +64,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-3
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30013:3001"
     environment:
@@ -81,6 +87,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-4
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30014:3001"
     environment:
@@ -102,6 +110,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-5
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30015:3001"
     environment:
@@ -123,6 +133,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-6
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30016:3001"
     environment:
@@ -144,6 +156,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-7
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30017:3001"
     environment:
@@ -165,6 +179,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-8
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30018:3001"
     environment:
@@ -186,6 +202,8 @@ services:
     build:
       context: ./backend/auth
     container_name: auth-service-9
+    volumes:
+      - ./backend/auth:/server/auth
     ports:
       - "30019:3001"
     environment:
@@ -209,7 +227,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-1
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30041:3004"
     environment:
@@ -234,7 +252,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-2
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30042:3004"
     environment:
@@ -259,7 +277,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-3
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30043:3004"
     environment:
@@ -284,7 +302,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-4
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30044:3004"
     environment:
@@ -309,7 +327,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-5
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30045:3004"
     environment:
@@ -334,7 +352,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-6
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30046:3004"
     environment:
@@ -359,7 +377,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-7
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30047:3004"
     environment:
@@ -384,7 +402,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-8
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30048:3004"
     environment:
@@ -409,7 +427,7 @@ services:
         context: ./backend/transaction
     container_name: transaction-service-9
     volumes:
-      - ./backend/middleware:/backend/middleware
+      - ./backend/transaction:/server/transaction
     ports:
       - "30049:3004"
     environment:
@@ -433,6 +451,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-1
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30021:3002"
     environment:
@@ -456,6 +476,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-2
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30022:3002"
     environment:
@@ -479,6 +501,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-3
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30023:3002"
     environment:
@@ -502,6 +526,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-4
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30024:3002"
     environment:
@@ -525,6 +551,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-5
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30025:3002"
     environment:
@@ -547,6 +575,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-6
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30026:3002"
     environment:
@@ -570,6 +600,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-7
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30027:3002"
     environment:
@@ -593,6 +625,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-8
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30028:3002"
     environment:
@@ -616,6 +650,8 @@ services:
     build:
       context: ./backend/order
     container_name: order-service-9
+    volumes:
+      - ./backend/order:/server/order
     ports:
       - "30029:3002"
     environment:
@@ -639,6 +675,8 @@ services:
     build:
       context: ./backend/userManagement
     container_name: usermanagement-service-1
+    volumes:
+      - ./backend/userManagement:/server/userManagement
     ports:
       - "30031:3003"
     environment:
@@ -661,6 +699,8 @@ services:
     build:
       context: ./backend/userManagement
     container_name: usermanagement-service-2
+    volumes:
+      - ./backend/userManagement:/server/userManagement
     ports:
       - "30032:3003"
     environment:
@@ -682,6 +722,8 @@ services:
     build:
       context: ./backend/userManagement
     container_name: usermanagement-service-3
+    volumes:
+      - ./backend/userManagement:/server/userManagement
     ports:
       - "30033:3003"
     environment:
@@ -703,6 +745,8 @@ services:
     build:
       context: ./backend/userManagement
     container_name: usermanagement-service-4
+    volumes:
+      - ./backend/userManagement:/server/userManagement
     ports:
       - "30034:3003"
     environment:
@@ -724,6 +768,8 @@ services:
     build:
       context: ./backend/userManagement
     container_name: usermanagement-service-5
+    volumes:
+      - ./backend/userManagement:/server/userManagement
     ports:
       - "30035:3003"
     environment:
@@ -743,9 +789,9 @@ services:
 
   api-gateway:
     image: nginx:latest
-    container_name: api-gateway
-    ports:
-      - "8080:8080"  # API Gateway is exposed on port 8080
+    deploy:
+      replicas: 9  # Multiple instances of Nginx
+      endpoint_mode: vip
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -816,6 +862,18 @@ services:
     networks:
       - backend-network
 
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy
+    ports:
+      - "4000:4000"    # Exposing Load Balancer on port 80
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - backend-network
+
   rabbitmq:
     image: "rabbitmq:3-management"
     container_name: rabbitmq
@@ -851,11 +909,12 @@ services:
       retries: 5
 
   matching-engine:
-    ports:
-      - "3006:3006"
     build:
       context: ./backend/matchingEngine
-    container_name: matching-engine
+    ports:
+      - "3008:3008"
+    volumes:
+      - ./backend/matchingEngine:/server/matchingEngine
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -876,3 +935,4 @@ services:
 networks:
   backend-network:
     driver: bridge
+
