@@ -30,7 +30,7 @@ if (!lock) {
 }
 
   // Begin tracking matchOrder runtime
-  const start_time = Date.now();
+  const start = Date.now();
   const { default: Redlock } = require('redlock');
 
   try {
