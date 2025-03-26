@@ -1,24 +1,50 @@
-const redis = require('./redis');
+const { default: Redlock } = require('redlock');
+const redisClient = require("./redis");
+
+const redlock = new Redlock(
+  [redisClient],
+  {
+    driftFactor: 0.01,            // Time factor for clock drift
+    retryCount: 10,               // Retry up to 10 times
+    retryDelay: 200,              // Wait 200ms between retries
+    retryJitter: 100,             // Add random jitter up to 100ms
+  }
+);
+
+redlock.on("clientError", (err) => {
+  console.error("❌ Redis client error in Redlock:", err);
+});
 
 /**
- * Acquire a lock on a key for a short TTL (defaults to 5s)
+ * Attempts to acquire a lock for the given stock key
+ * @param {string} resource - The resource key e.g. "stock:Google"
+ * @param {number} ttl - Time to live in ms
+ * @returns {Promise<Lock|null>}
  */
-async function acquireLock(key, ttl = 5000) {
-  const lockKey = `lock:${key}`;
-  const lockVal = `${Date.now()}-${Math.random()}`;
-  const result = await redis.set(lockKey, lockVal, 'NX', 'PX', ttl);
-  return result ? lockVal : null;
-}
-
-/**
- * Release lock only if it matches the original value
- */
-async function releaseLock(key, value) {
-  const lockKey = `lock:${key}`;
-  const currentVal = await redis.get(lockKey);
-  if (currentVal === value) {
-    await redis.del(lockKey);
+async function acquireLock(resource, ttl = 5000) {
+  try {
+    const lock = await redlock.acquire([resource], ttl);
+    return lock;
+  } catch (err) {
+    console.warn(`⚠️ Could not acquire Redlock for ${resource}`);
+    return null;
   }
 }
 
-module.exports = { acquireLock, releaseLock };
+/**
+ * Releases a previously acquired Redlock
+ * @param {Lock} lock
+ */
+async function releaseLock(lock) {
+  if (!lock) return;
+  try {
+    await lock.release();
+  } catch (err) {
+    console.error("❌ Error releasing Redlock:", err);
+  }
+}
+
+module.exports = {
+  acquireLock,
+  releaseLock,
+};

@@ -22,16 +22,16 @@ const transactionServiceUrl = "http://api-gateway:8080/transaction";
  * Handles partial fulfillment.
  */
 async function matchOrder(newOrder) {
-  const lockKey = `stock:${newOrder.stock_id}`;
-  const lockToken = await acquireLock(lockKey);
-
-  if (!lockToken) {
-    console.warn(`Could not acquire lock for ${lockKey}.`);
-    return { matched: false };    
-  }
+  const lock = await acquireLock(`locks:stock:${newOrder.stock_id}`);
+  
+if (!lock) {
+  console.warn(`Could not acquire lock for stock:${newOrder.stock_id}`);
+  return { matched: false };
+}
 
   // Begin tracking matchOrder runtime
   const start_time = Date.now();
+const { default: Redlock } = require('redlock');
 
   try {
     if (!newOrder.is_buy) {
@@ -239,7 +239,7 @@ async function matchOrder(newOrder) {
   } finally {
     const runtime = Date.now() - start;
     console.log(`matchOrder execution time: ${runtime}ms`);
-    await releaseLock(lockKey, lockToken);
+    await releaseLock(lock);
   }
 }
 
