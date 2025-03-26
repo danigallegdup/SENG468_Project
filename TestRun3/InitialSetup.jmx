@@ -11,7 +11,7 @@
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
             <stringProp name="Argument.name">BASE_PORT</stringProp>
-            <stringProp name="Argument.value">4000</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="register" elementType="Argument">
@@ -86,7 +86,7 @@
           </elementProp>
           <elementProp name="configPath" elementType="Argument">
             <stringProp name="Argument.name">configPath</stringProp>
-            <stringProp name="Argument.value">/Users/hieuvuong/Documents/uvic/fourth/seng468/project/SENG468_Project/TestRun3/Config/</stringProp>
+            <stringProp name="Argument.value">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/Config/</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -952,7 +952,7 @@ csvFile.append(appleStockId);</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

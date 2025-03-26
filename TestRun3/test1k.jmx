@@ -86,12 +86,12 @@
           </elementProp>
           <elementProp name="stockFile" elementType="Argument">
             <stringProp name="Argument.name">stockFile</stringProp>
-            <stringProp name="Argument.value">/home/dgallegosdupuis/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
+            <stringProp name="Argument.value">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/Config/stockIds.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="userFile" elementType="Argument">
             <stringProp name="Argument.name">userFile</stringProp>
-            <stringProp name="Argument.value">/home/dgallegosdupuis/SENG468_Project/TestRun3/UserFiles/UserCreds_1000.csv</stringProp>
+            <stringProp name="Argument.value">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/UserFiles/UserCreds_1000.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numUsers" elementType="Argument">
@@ -101,7 +101,7 @@
           </elementProp>
           <elementProp name="reqTimeout" elementType="Argument">
             <stringProp name="Argument.name">reqTimeout</stringProp>
-            <stringProp name="Argument.value">80000</stringProp>
+            <stringProp name="Argument.value">5000</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -134,7 +134,7 @@
       <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="User Thread Group" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${numUsers}</stringProp>
-        <intProp name="ThreadGroup.ramp_time">15</intProp>
+        <intProp name="ThreadGroup.ramp_time">45</intProp>
         <longProp name="ThreadGroup.duration">1000</longProp>
         <longProp name="ThreadGroup.delay">1</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
@@ -509,8 +509,8 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="500ms Constant Timer" enabled="true">
-            <stringProp name="ConstantTimer.delay">500</stringProp>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="5000ms Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">5000</stringProp>
           </ConstantTimer>
           <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User1 HTTP Header Manager" enabled="true">
@@ -822,7 +822,7 @@
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">true</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -859,7 +859,7 @@
         <stringProp name="filename">/home/pratik/results.csv</stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -893,7 +893,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/dgallegosdupuis/SENG468_Project/TestRun3/result_1k.csv</stringProp>
+        <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
