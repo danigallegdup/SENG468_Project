@@ -11,7 +11,7 @@
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
             <stringProp name="Argument.name">BASE_PORT</stringProp>
-            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.value">4000</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="register" elementType="Argument">
@@ -91,12 +91,12 @@
           </elementProp>
           <elementProp name="userFile" elementType="Argument">
             <stringProp name="Argument.name">userFile</stringProp>
-            <stringProp name="Argument.value">/Users/hieuvuong/Documents/uvic/fourth/seng468/project/SENG468_Project/TestRun3/UserFiles/UserCreds_4000.csv</stringProp>
+            <stringProp name="Argument.value">/Users/hieuvuong/Documents/uvic/fourth/seng468/project/SENG468_Project/TestRun3/UserFiles/UserCreds_1000.csv</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numUsers" elementType="Argument">
             <stringProp name="Argument.name">numUsers</stringProp>
-            <stringProp name="Argument.value">4000</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="reqTimeout" elementType="Argument">
@@ -822,7 +822,7 @@
           <hashTree/>
         </hashTree>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">true</boolProp>
         <objProp>
           <name>saveConfig</name>
