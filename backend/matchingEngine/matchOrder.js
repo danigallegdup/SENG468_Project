@@ -30,6 +30,9 @@ async function matchOrder(newOrder) {
     return { matched: false };    
   }
 
+  // Begin tracking matchOrder runtime
+  const start_time = Date.now();
+
   try {
     if (!newOrder.is_buy) {
       console.error(`❌ ERROR: Sell order reached matchOrder()!`, JSON.stringify(newOrder, null, 2));
@@ -132,30 +135,6 @@ async function matchOrder(newOrder) {
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
       pipeline.zadd(`sell_orders:${newOrder.stock_id}`, sellOrder.stock_price, JSON.stringify(sellOrder));
 
-      /*
-      pipeline.zadd(`stock_transactions:${sellOrder.user_id}`, timestamp, JSON.stringify(childOrder));
-
-      console.log("✅ Created child order:", childOrder);
-
-      // Update parent order in Redis
-      pipeline.zrem(`stock_transactions:${sellOrder.user_id}`, JSON.stringify(sellOrder));
-      pipeline.zadd(
-        `stock_transactions:${sellOrder.user_id}`,
-        timestamp,
-        JSON.stringify({
-          ...sellOrder,
-          order_status: "PARTIALLY_FILLED",
-          quantity: remainingQuantity,
-          wallet_tx_id: null,
-        })
-      );
-
-      console.log(`🔄 Updated parent order ${sellOrder.stock_tx_id} in Redis`);
-
-      // Remove old order and reinsert updated order
-      pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
-      pipeline.zadd(`sell_orders:${newOrder.stock_id}`, sellOrder.stock_price, JSON.stringify(sellOrder));
-*/
     } else {
       // Fully fulfilled, remove from Redis
       pipeline.zrem(`sell_orders:${newOrder.stock_id}`, lowestSellOrder[0]);
@@ -258,6 +237,8 @@ async function matchOrder(newOrder) {
     console.error("❌ Error matching order:", error);
     return { matched: false };
   } finally {
+    const runtime = Date.now() - start;
+    console.log(`matchOrder execution time: ${runtime}ms`);
     await releaseLock(lockKey, lockToken);
   }
 }
