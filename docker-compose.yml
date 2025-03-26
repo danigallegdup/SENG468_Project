@@ -122,7 +122,7 @@ services:
   api-gateway:
     image: nginx:latest
     deploy:
-      replicas: 20  # Multiple instances of Nginx
+      replicas: 9  # Multiple instances of Nginx
       endpoint_mode: vip
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
