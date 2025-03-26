@@ -33,6 +33,9 @@ if (!lock) {
   const start_time = Date.now();
 const { default: Redlock } = require('redlock');
 
+  // Begin tracking matchOrder runtime
+  const start_time = Date.now();
+
   try {
     if (!newOrder.is_buy) {
       console.error(`❌ ERROR: Sell order reached matchOrder()!`, JSON.stringify(newOrder, null, 2));
@@ -239,7 +242,11 @@ const { default: Redlock } = require('redlock');
   } finally {
     const runtime = Date.now() - start;
     console.log(`matchOrder execution time: ${runtime}ms`);
+<<<<<<< HEAD
     await releaseLock(lock);
+=======
+    await releaseLock(lockKey, lockToken);
+>>>>>>> f775f95e247898411402af9b49379e35760f5df9
   }
 }
 
