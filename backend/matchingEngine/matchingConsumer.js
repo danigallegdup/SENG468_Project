@@ -5,7 +5,7 @@ consumer.js: RabbitMQ consumer for the Order Service.
 */
 
 const amqp = require('amqplib');
-const { matchOrder } = require('../matchingEngine/matchOrder'); // Matching logic
+const { matchOrder } = require('./matchOrder'); // Matching logic
 const redisClient = require("./redis"); // Import Redis
 
 const ORDER_QUEUE = 'orders';
