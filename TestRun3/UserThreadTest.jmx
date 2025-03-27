@@ -856,7 +856,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/results.csv</stringProp>
+        <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/results.csv</stringProp>
       </ResultCollector>
       <hashTree/>
       <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
