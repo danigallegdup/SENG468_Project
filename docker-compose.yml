@@ -574,9 +574,8 @@ services:
 
   api-gateway:
     image: nginx:latest
-    deploy:
-      replicas: 2  # Multiple instances of Nginx
-      endpoint_mode: vip
+    ports:
+      - "8080:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -629,17 +628,17 @@ services:
     networks:
       - backend-network
 
-  haproxy:
-    image: haproxy:latest
-    container_name: haproxy
-    ports:
-      - "4000:4000"    # Exposing Load Balancer on port 80
-    volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-    depends_on:
-      - api-gateway
-    networks:
-      - backend-network
+  # haproxy:
+  #   image: haproxy:latest
+  #   container_name: haproxy
+  #   ports:
+  #     - "4000:4000"    # Exposing Load Balancer on port 80
+  #   volumes:
+  #     - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+  #   depends_on:
+  #     - api-gateway
+  #   networks:
+  #     - backend-network
 
   rabbitmq:
     image: "rabbitmq:3-management"

@@ -11,7 +11,7 @@
           </elementProp>
           <elementProp name="BASE_PORT" elementType="Argument">
             <stringProp name="Argument.name">BASE_PORT</stringProp>
-            <stringProp name="Argument.value">4000</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="register" elementType="Argument">
@@ -859,7 +859,7 @@
         <stringProp name="filename">/home/dgallegosdupuis/STU_testRun/SENG468_Project/TestRun3/results.csv</stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
