@@ -1,0 +1,40 @@
+2025-03-30 14:11:07,913 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2025-03-30 14:11:07,928 INFO o.a.j.JMeter: Loading user properties from: C:\Program Files\apache-jmeter-5.6.3\bin\user.properties
+2025-03-30 14:11:07,931 INFO o.a.j.JMeter: Loading system properties from: C:\Program Files\apache-jmeter-5.6.3\bin\system.properties
+2025-03-30 14:11:07,944 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2025-03-30 14:11:07,944 INFO o.a.j.JMeter: Version 5.6.3
+2025-03-30 14:11:07,944 INFO o.a.j.JMeter: java.version=1.8.0_432
+2025-03-30 14:11:07,944 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2025-03-30 14:11:07,944 INFO o.a.j.JMeter: os.name=Windows 11
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: os.arch=amd64
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: os.version=10.0
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: file.encoding=Cp1252
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: java.awt.headless=null
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: Max memory     =1073741824
+2025-03-30 14:11:07,945 INFO o.a.j.JMeter: Available Processors =12
+2025-03-30 14:11:07,951 INFO o.a.j.JMeter: Default Locale=English (EN)
+2025-03-30 14:11:07,951 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2025-03-30 14:11:07,951 INFO o.a.j.JMeter: JMeterHome=C:\Program Files\apache-jmeter-5.6.3
+2025-03-30 14:11:07,951 INFO o.a.j.JMeter: user.dir  =C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App
+2025-03-30 14:11:07,952 INFO o.a.j.JMeter: PWD       =C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App
+2025-03-30 14:11:07,980 INFO o.a.j.JMeter: IP: 192.168.1.71 Name: Nayla FullName: host.docker.internal
+2025-03-30 14:11:08,006 INFO o.a.j.JMeter: Loaded icon properties from org/apache/jmeter/images/icon.properties
+2025-03-30 14:11:08,251 INFO o.a.j.JMeterGuiLauncher: Setting LAF to: com.github.weisj.darklaf.DarkLaf:com.github.weisj.darklaf.theme.DarculaTheme
+2025-03-30 14:11:33,922 INFO o.a.j.s.FileServer: Default base='C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App'
+2025-03-30 14:11:33,925 INFO o.a.j.g.a.Load: Loading file: C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App\TestRun3\UserThreadTest.jmx
+2025-03-30 14:11:33,925 INFO o.a.j.s.FileServer: Set new base='C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App\TestRun3'
+2025-03-30 14:11:34,058 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2025-03-30 14:11:34,074 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2025-03-30 14:11:34,075 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2025-03-30 14:11:34,078 INFO o.a.j.s.SaveService: Loading file: C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App\TestRun3\UserThreadTest.jmx
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2025-03-30 14:11:34,116 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2025-03-30 14:11:34,451 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2025-03-30 14:11:34,451 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2025-03-30 14:11:34,451 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2025-03-30 14:11:34,451 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2025-03-30 14:11:34,646 INFO o.a.j.s.FileServer: Set new base='C:\Users\danig\Downloads\2025\School\SENG468\Project\Repo\Pull_again\SENG468_Project_TR2\SENG468_Project\Stock_Trading_App\TestRun3'
